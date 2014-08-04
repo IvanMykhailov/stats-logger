@@ -1,11 +1,11 @@
-name := "mall-locator-sensor"
+name := "stats-logger-core"
 
 organization := "me.singularex"
 
 version := "0.1-SNAPSHOT"
 
 libraryDependencies ++= Seq(
-  "org.scalaj" % "scalaj-time_2.10.2" % "0.7",
+  "com.github.nscala-time" %% "nscala-time" % "1.2.0",
   "com.typesafe.play" %% "play-json" % "2.3.1",
 //  "com.ning" % "async-http-client" % "1.8.3",
   "com.typesafe" % "config" % "1.2.0",
@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
 //  "com.typesafe.akka" %% "akka-actor" % "2.2.1"
 )
 
-MongoDb driver
+//MongoDb driver
 libraryDependencies ++= Seq(
   "org.reactivemongo" %% "reactivemongo" % "0.10.0",
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.2"
@@ -24,7 +24,8 @@ libraryDependencies ++= Seq(
 
 //Tests
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "2.0" % "test"//,
+  "org.scalatest" %% "scalatest" % "2.2.1" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.11.5" % "test"
   //"com.typesafe.akka" %% "akka-testkit" % "2.2.0" % "test"
 )
 
