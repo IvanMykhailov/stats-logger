@@ -1,7 +1,8 @@
 package slogger.model.specification.extraction
 
-import slogger.model.TimePeriod
+import slogger.model.common.TimePeriod
 import com.github.nscala_time.time.Imports._
+import slogger.model.common.TimePeriod
 
 
 sealed trait TimeLimits {

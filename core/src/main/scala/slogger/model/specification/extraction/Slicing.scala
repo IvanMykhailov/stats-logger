@@ -27,7 +27,7 @@ case class Slicing(
     
     def s(startTime: DateTime): Stream[Slice] = {
       val endTime = startTime + sliceDuration
-      val complete = endTime <= interval.getEnd()
+      val complete = startTime >= interval.getStart() && endTime <= interval.getEnd()
       val slice = Slice(startTime, endTime, complete)
       
       if (endTime < interval.getEnd()) {

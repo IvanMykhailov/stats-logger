@@ -1,9 +1,8 @@
 package slogger.model.specification.extraction
 
 import play.api.libs.json.JsObject
-import org.joda.time.DateTime
-import slogger.model.TimePeriod
-import slogger.model.TimePeriod
+import com.github.nscala_time.time.Imports._
+import slogger.model.common.TimePeriod
 
 
 case class DataExtraction(

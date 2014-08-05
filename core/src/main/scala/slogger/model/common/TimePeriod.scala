@@ -1,4 +1,4 @@
-package slogger.model
+package slogger.model.common
 
 import com.github.nscala_time.time.Imports._
 
@@ -18,7 +18,6 @@ object TimePeriod extends Enumeration {
     case Hour       => new Duration(      1L * 60 * 60 * 1000)
     case Day        => new Duration(1L  * 24 * 60 * 60 * 1000)
     case Week       => new Duration(7L  * 24 * 60 * 60 * 1000)
-    case Month      => new Duration(31L * 24 * 60 * 60 * 1000)
-    
+    case Month      => new Duration(31L * 24 * 60 * 60 * 1000)    
   }
 }

@@ -7,7 +7,7 @@ import com.github.nscala_time.time.Imports._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Gen.Choose
-import slogger.model.TimePeriod
+import slogger.model.common.TimePeriod
 import slogger.model.specification.extraction.Slicing
 
 
@@ -77,4 +77,20 @@ class SlicingTest extends FlatSpec with Matchers with PropertyChecks {
   } 
    
   val requiredSliceCount = Math.ceil(interval.toDurationMillis().toDouble / sliceDuration.getMillis()).toInt
+  
+  "Border slice" should "be incomplete if it are outside interval" in {
+    forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
+      val slices = Slicing(snapToDate, sliceDuration).getSlicesFor(interval)
+      
+      slices foreach { slice =>
+        if (isNested(interval, slice.toInterval)) {
+          slice.complete shouldBe true
+        } else {
+          slice.complete shouldBe false
+        }
+      }
+    }
+  }
+  
+  def isNested(outer: Interval, inner: Interval): Boolean = outer.contains(inner.start) && outer.contains(inner.end)
 }
