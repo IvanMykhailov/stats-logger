@@ -6,8 +6,8 @@ import slogger.model.common.TimePeriod
 
 
 case class DataExtraction(
-  filter: JsObject,
-  projection: JsObject,
+  filter: Option[JsObject],
+  projection: Option[JsObject],
   timeLimits: TimeLimits,
   slicing: Option[Slicing]
 ) {

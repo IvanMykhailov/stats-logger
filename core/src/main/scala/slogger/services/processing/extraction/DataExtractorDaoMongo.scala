@@ -14,20 +14,26 @@ class DataExtractorDaoMongo(
 
   val logCollection: JSONCollection = dbProvider.db.collection("logs")
   
-  def load(times: Interval, filter: JsObject, projection: JsObject): Enumerator[JsObject] = {
-    val timesFilter = obj("$and" -> arr(
-      obj("time" -> obj("$gte" -> Json.toJson(times.start))),
-      obj("time" -> obj("$lte" -> Json.toJson(times.end)))
-    ))
+  def load(times: Interval, filter: Option[JsObject], projection: Option[JsObject]): Enumerator[JsObject] = {
     
-    val query = if (filter.fields.isEmpty) {
-      timesFilter 
+    val dateFilters = Seq(
+      obj("time" -> obj("$gte" -> jsonDate(times.start))),
+      obj("time" -> obj("$lte" -> jsonDate(times.end)))
+    )
+    
+    val query = if (filter.isEmpty || filter.get.fields.isEmpty) {
+      obj("$and" -> dateFilters)
     } else {
-      obj("$and" -> arr(
-        filter,
-        timesFilter
-      ))
+      obj("$and" -> (dateFilters :+ filter.get))
     }
-    logCollection.find(query, projection).cursor[JsObject].enumerate(stopOnError = false)
+    
+    println(query)
+    
+    (projection match {
+      case Some(p) => logCollection.find(query, p)
+      case None => logCollection.find(query)
+    }).cursor[JsObject].enumerate(stopOnError = false)
   }
+  
+  private def jsonDate(time: DateTime) = Json.obj("$date" -> time.getMillis())
 }
