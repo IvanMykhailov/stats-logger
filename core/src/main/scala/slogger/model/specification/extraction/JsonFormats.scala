@@ -5,10 +5,9 @@ import slogger.model.common
 
 trait JsonFormats extends common.JsonFormats {
   
-  val SlicingFormat = Json.format[Slicing] 
+  implicit val SlicingFormat = Json.format[Slicing] 
   
-  
-  val TimeLimitsFromat = {
+  implicit val TimeLimitsFromat = {
     implicit val LastPeriodFormat = Json.format[LastPeriod]
     implicit val StartEndTimeFormat = Json.format[StartEndTime]
     
@@ -26,9 +25,10 @@ trait JsonFormats extends common.JsonFormats {
         case v: LastPeriod => Json.toJson(v)
         case v: StartEndTime => Json.toJson(v)
       }
-    }
-    
+    }    
   }
+  
+  implicit val DataExtractionFormat = Json.format[DataExtraction]
 }
 
 

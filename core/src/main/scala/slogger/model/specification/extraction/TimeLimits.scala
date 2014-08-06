@@ -10,6 +10,12 @@ sealed trait TimeLimits {
 }
 
 
+object TimeLimits {
+  def apply(interval: Interval) = StartEndTime(interval.start, interval.end)
+  def apply(timePeriod: TimePeriod.Value) = LastPeriod(timePeriod)
+}
+
+
 case class LastPeriod(
   forLastPeriod: TimePeriod.Value  
 ) extends TimeLimits {

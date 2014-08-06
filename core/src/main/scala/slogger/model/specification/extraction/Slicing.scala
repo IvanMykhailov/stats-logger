@@ -5,9 +5,9 @@ import slogger.model.processing.Slice
 
 
 case class Slicing(
+  sliceDuration: Duration,
   snapTo: DateTime = new DateTime(0L),
-  sliceDuration: Duration, 
-    
+  
   enabled: Boolean = true
 ) {
   

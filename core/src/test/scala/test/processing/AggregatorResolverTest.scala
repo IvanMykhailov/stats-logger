@@ -11,6 +11,7 @@ import slogger.services.processing.aggregation.AggregatorResolverImpl
 import play.api.libs.json._
 import scala.util.Success
 import scala.util.Try
+import scala.util.Failure
 
 
 class CorrectAggregator(config: JsObject) extends Aggregator {
@@ -36,16 +37,17 @@ class AggregatorResolverTest extends FlatSpec with Matchers with PropertyChecks 
   
   it should "fail if class not found" in {
     val config = Json.obj()
-    intercept[ClassNotFoundException] {
-      resolver.resolve("some.unexisted.class", config)
-    }    
+    val rez = resolver.resolve("some.unexisted.class", config)
+    rez shouldBe a [Failure[_]]
+    rez.failed.get shouldBe a [ClassNotFoundException]    
   }
   
   
   it should "fail if constructor is incorrect" in {
     val config = Json.obj()
-    intercept[IllegalArgumentException] {
-      resolver.resolve(classOf[AggregatorWithIncorrectConstructor].getName(), config)
-    }    
+    val rez = resolver.resolve(classOf[AggregatorWithIncorrectConstructor].getName(), config)
+    rez shouldBe a [Failure[_]]
+    rez.failed.get shouldBe a [IllegalArgumentException]
+    
   }
 }
