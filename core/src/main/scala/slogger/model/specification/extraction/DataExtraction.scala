@@ -9,7 +9,8 @@ case class DataExtraction(
   filter: Option[JsObject],
   projection: Option[JsObject],
   timeLimits: TimeLimits,
-  slicing: Option[Slicing]
+  slicing: Option[Slicing],
+  customCollectionName: Option[String] = None
 ) {
   def isSlicingEnabled = slicing.map(_.enabled).getOrElse(false)
 }

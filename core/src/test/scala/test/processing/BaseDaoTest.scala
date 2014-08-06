@@ -18,19 +18,30 @@ abstract class BaseDaoTest extends FlatSpec with Matchers with PropertyChecks {
 
   val dbProvider: DbProvider = new DirectMongoDbProvider(dbName = "sloger_test", hosts = Seq("localhost"))
   
-  init()
-  
+  init()  
   
   def init(): Unit = {
     println("Start data initilizing ...")
-    val collection: JSONCollection = dbProvider.db.collection("logs")
+    val collection: JSONCollection = dbProvider.db.collection("xlogs")
     val text = io.Source.fromInputStream(getClass.getResourceAsStream("/testLogs.json"))
     
     
-    twait(collection.remove(Json.obj()))
-    text.getLines.foreach { line => 
-      val json = Json.parse(line)
-      twait(collection.save(json))
+    val empty = twait(collection.find(Json.obj()).cursor[JsObject].headOption).isEmpty
+    val needDataLoad = if (empty) {
+      true
+    } else {
+      val stats = twait(collection.stats)
+      stats.count != 51928
+    }
+        
+    if (needDataLoad) {
+      //Optimization: load test data only if collection is empty
+      println("Require data reloading")
+      twait(collection.remove(Json.obj()))
+      text.getLines.foreach { line => 
+        val json = Json.parse(line)
+        twait(collection.save(json))
+      }  
     }
     println("Complete data initilizing")
   } 

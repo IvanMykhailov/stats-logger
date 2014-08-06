@@ -1,5 +1,6 @@
-package slogger.model.processing.aggregation.aggregators.onefield
+package slogger.services.processing.aggregation.aggregator.onefield
 
+import play.api.libs.functional.syntax.toInvariantFunctorOps
 import play.api.libs.json.Json
 
 case class Config(

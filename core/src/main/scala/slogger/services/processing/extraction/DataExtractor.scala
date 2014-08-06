@@ -31,7 +31,8 @@ class DataExtractorImpl(
     }
     //force laziness to avoid simultaneous db requests
     slicing.getSlicesFor(interval).view.map { slice =>
-      (slice, dao.load(slice.toInterval, specs.filter, specs.projection))
+      val data = dao.load(slice.toInterval, specs.filter, specs.projection, specs.customCollectionName)
+      (slice, data)
     }
   }
 }

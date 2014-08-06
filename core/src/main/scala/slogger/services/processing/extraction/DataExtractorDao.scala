@@ -7,5 +7,5 @@ import play.api.libs.iteratee.Enumerator
 
 trait DataExtractorDao {
   
-  def load(times: Interval, filter: Option[JsObject], projection: Option[JsObject]): Enumerator[JsObject]
+  def load(times: Interval, filter: Option[JsObject], projection: Option[JsObject], customCollectionName: Option[String] = None): Enumerator[JsObject]
 }

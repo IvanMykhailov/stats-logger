@@ -1,6 +1,6 @@
-package slogger.model.processing.aggregation.aggregators.onefield
+package slogger.services.processing.aggregation.aggregator.onefield
 
-import slogger.model.processing.aggregation.Aggregator
+import slogger.services.processing.aggregation.Aggregator
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json.JsObject
 import play.api.libs.iteratee.Iteratee
@@ -9,6 +9,7 @@ import play.api.libs.json.JsObject
 import play.api.libs.json.JsArray
 import play.api.libs.json.JsValue
 import scala.concurrent.Future
+import slogger.services.processing.aggregation.aggregator.AggregatorUtils
 
 
 /**
@@ -24,16 +25,12 @@ class CountAggregator(config: JsObject) extends Aggregator {
   
   
   def iteratee(implicit ec: ExecutionContext) = Iteratee.fold(Map.empty[String, BigDecimal]){ (state: Map[String, BigDecimal], json: JsObject) => 
-    values(json).foldLeft(state){ (rez, v) => 
+    AggregatorUtils.values(json).foldLeft(state){ (rez, v) => 
       val count = rez.getOrElse(v, BigDecimal(0)) + 1
       rez + (v -> count)      
     }
   }
   
   
-  def values(js: JsValue): Seq[String] = js match {
-    case JsArray(values) => values.map(_.toString)
-    case obj: JsObject => Seq()
-    case v: JsValue => Seq(v.toString)
-  }
+  
 }
