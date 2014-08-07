@@ -13,39 +13,59 @@ import slogger.services.processing.aggregation.aggregators.AggregatorUtils
 import slogger.model.processing.Slice
 import slogger.model.processing.SliceAggregated
 import slogger.utils.IterateeUtils
+import play.api.libs.json.Json
+import play.api.libs.json.Format
 
 
-/**
- * Return count of each value for all found values in specified field.
- * Field can be array of simple types. In that case each array element is count as separate value 
- */
-class CountAggregator(config: JsObject) extends Aggregator {
+class AverageAggregator(config: JsObject) extends Aggregator {
+  import AverageAggregator._
+  
   val cfg = config.as[Config]
   
-  override def name = "SimpleCountAggregator"
+  val resultKey = "[AVERAGE]"
+  
+  override def name = "SimpleSumAggregator"
    
   override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceAggregated] =
-    dataEnumerator.run(iteratee).map { results =>  
+    dataEnumerator.run(iteratee).map { tmpRez =>
       SliceAggregated(
         slice,
-        results
+        results = Map(resultKey -> tmpRez.sum / tmpRez.count),
+        meta = Json.toJson(tmpRez)
       )
     }
     
   protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
-    Iteratee.fold(Map.empty[String, BigDecimal]) { (state: Map[String, BigDecimal], json: JsObject) => 
-      AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
-        val count = rez.getOrElse(v, BigDecimal(0)) + 1
-        rez + (v -> count)      
+    Iteratee.fold(TmpRez()) { (state: TmpRez, json: JsObject) => 
+      val values = AggregatorUtils.numberValues(json\(cfg.fieldName))
+      if (values.isEmpty) {
+        state
+      } else {
+        TmpRez(
+          count = state.count + values.length,
+          sum = state.sum + values.reduce(_ + _)
+        )
       }
     }
   )
   
+  
   override def isSliceMergingSupported = true
   
   override def mergeSlices(slices: Seq[SliceAggregated]): Map[String, BigDecimal] = {
-    val merger = AggregatorUtils.merge(_ + _) _
-    merger(slices.map(_.results))
+    val tmpRez = slices.map(_.meta.as[TmpRez]).reduce(_ + _)
+    Map(resultKey -> tmpRez.sum / tmpRez.count)
   } 
+}
+
+
+object AverageAggregator {
+  case class TmpRez(count: BigDecimal = 0, sum: BigDecimal = 0) {
+    def + (other: TmpRez) = this.copy(
+      count = this.count + other.count,
+      sum = this.sum + other.sum
+    )
+  }
   
+  implicit val TmpRezFormat: Format[TmpRez] = Json.format[TmpRez]  
 }

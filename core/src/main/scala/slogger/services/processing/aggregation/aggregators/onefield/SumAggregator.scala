@@ -26,8 +26,7 @@ class SumAggregator(config: JsObject) extends Aggregator {
     dataEnumerator.run(iteratee).map { sum =>
       SliceAggregated(
         slice,
-        results = Map(resultKey -> sum),
-        meta = Map.empty
+        results = Map(resultKey -> sum)
       )
     }
     
