@@ -5,7 +5,9 @@ import play.api.libs.json._
 
 trait JsonFormats {
   
-  val SliceFormat: Format[Slice] = Json.format[Slice]
+  implicit val SliceFormat: Format[Slice] = Json.format[Slice]
+  
+  implicit val SliceAggregatedFormat = Json.format[SliceAggregated]
 }
 
 

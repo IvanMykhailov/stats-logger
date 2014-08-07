@@ -4,7 +4,7 @@ import com.github.nscala_time.time.Imports._
 import slogger.model.processing.Slice
 
 
-case class Slicing(
+case class SlicingSpecs(
   sliceDuration: Duration,
   snapTo: DateTime = new DateTime(0L),
   
@@ -28,7 +28,11 @@ case class Slicing(
     def s(startTime: DateTime): Stream[Slice] = {
       val endTime = startTime + sliceDuration
       val complete = startTime >= interval.getStart() && endTime <= interval.getEnd()
-      val slice = Slice(startTime, endTime, complete)
+      val slice = Slice(
+        max(startTime, interval.start), 
+        min(endTime, interval.end), 
+        complete
+      )
       
       if (endTime < interval.getEnd()) {
         slice #:: s(endTime)
@@ -39,4 +43,8 @@ case class Slicing(
     
     s(slice1start)
   }
+  
+  protected def max(d1: DateTime, d2: DateTime): DateTime = if (d1 > d2) d1 else d2
+  
+  protected def min(d1: DateTime, d2: DateTime): DateTime = if (d1 < d2) d1 else d2
 }

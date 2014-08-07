@@ -12,14 +12,16 @@ import play.api.libs.json._
 import scala.util.Success
 import scala.util.Try
 import scala.util.Failure
+import slogger.model.processing.SliceAggregated
+import slogger.model.processing.Slice
 
 
 class CorrectAggregator(config: JsObject) extends Aggregator {
-  override def aggregate(enumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[Map[String, BigDecimal]] = null
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceAggregated] = null
 }
 
 class AggregatorWithIncorrectConstructor(config: JsObject, foo: Int) extends Aggregator {
-  override def aggregate(enumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[Map[String, BigDecimal]] = null
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceAggregated] = null
 }
 
 

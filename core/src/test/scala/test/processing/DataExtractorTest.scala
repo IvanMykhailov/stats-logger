@@ -4,7 +4,7 @@ import slogger.services.processing.extraction.DataExtractorDaoMongo
 import slogger.services.processing.extraction.DataExtractorImpl
 import slogger.services.processing.extraction.DataExtractor
 import slogger.services.processing.extraction.DataExtractorDao
-import slogger.model.specification.extraction.DataExtraction
+import slogger.model.specification.extraction.ExtractionSpecs
 import play.api.libs.json.Json
 import slogger.model.common.TimePeriod
 import slogger.model.specification.extraction.LastPeriod
@@ -18,7 +18,7 @@ class DataExtractorTest extends BaseDaoTest {
   val extractor: DataExtractor = new DataExtractorImpl(dao)
   
   it should "work" in {
-    val specs = DataExtraction(
+    val specs = ExtractionSpecs(
       filter = None,
       projection = None,
       timeLimits = LastPeriod(TimePeriod.Month),

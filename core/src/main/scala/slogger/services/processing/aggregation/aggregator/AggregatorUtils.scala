@@ -10,6 +10,7 @@ object AggregatorUtils {
     case _: JsObject => Seq()
     case _: JsUndefined => Seq()
     case JsNull => Seq()
+    case JsString(s) => Seq(s)
     case v: JsValue => Seq(v.toString)
   }
     

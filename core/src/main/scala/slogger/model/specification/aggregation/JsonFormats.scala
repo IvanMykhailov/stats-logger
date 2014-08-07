@@ -4,7 +4,7 @@ import play.api.libs.json.Json
 
 
 trait JsonFormats {
-  implicit val AggregationFormat = Json.format[Aggregation] 
+  implicit val AggregationSpecsFormat = Json.format[AggregationSpecs] 
 }
 
 

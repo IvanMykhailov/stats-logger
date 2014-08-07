@@ -12,6 +12,8 @@ import slogger.services.processing.extraction.DbProvider
 import slogger.services.processing.extraction.DataExtractorDaoMongo
 import slogger.services.processing.extraction.DataExtractorImpl
 import slogger.services.processing.aggregation.AggregatorResolverImpl
+import slogger.model.processing.SliceAggregated
+import slogger.model.processing.Slice
 
 
 trait Calculator {
@@ -32,18 +34,26 @@ class CalculatorImpl(
     val data = extractor.extract(specs.extraction, now)
     val aggregator: Aggregator = aggregatorResolver.resolve(specs.aggregation.aggregatorClass, specs.aggregation.config).get
     
-    val aggregatedData = data.map { case (slice, sliceData) => 
-      val future = aggregator.aggregate(sliceData)(executionContext)
+    val aggregated = data.map { case (slice, sliceData) => 
+      val future = aggregator.aggregate(slice, sliceData)(executionContext)
       //use await since we don't need simultaneous execution of mongo requests for all slices
-      val aggregatedData = Await.result(future, scala.concurrent.duration.Duration(60, "minutes")) 
-      (slice, aggregatedData)
+      Await.result(future, scala.concurrent.duration.Duration(60, "minutes"))
+    }
+    
+    val total = if (aggregator.isSliceMergingSupported) {
+      Some(aggregator.mergeSlices(aggregated))
+    } else {
+      None
     }
     
     StatsResult(
-      lines = aggregatedData,
-      total = aggregator.mergeSlices(aggregatedData)
+      lines = onlyData(aggregated),
+      total = total
     )
   }
+  
+  protected def onlyData(aggregated: Seq[SliceAggregated]): Seq[(Slice, Map[String, BigDecimal])] = 
+    aggregated.map { a => (a.slice, a.results)}
 }
 
 

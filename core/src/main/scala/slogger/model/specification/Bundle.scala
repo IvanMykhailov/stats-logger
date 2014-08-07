@@ -1,10 +1,10 @@
 package slogger.model.specification
 
-import slogger.model.specification.extraction.DataExtraction
-import slogger.model.specification.aggregation.Aggregation
+import slogger.model.specification.extraction.ExtractionSpecs
+import slogger.model.specification.aggregation.AggregationSpecs
 
 
 case class Bundle(
-  extraction: DataExtraction,
-  aggregation: Aggregation
+  extraction: ExtractionSpecs,
+  aggregation: AggregationSpecs
 )
