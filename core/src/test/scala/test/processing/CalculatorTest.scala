@@ -15,6 +15,7 @@ import play.api.libs.json.JsObject
 import slogger.services.processing.extraction.DataExtractorImpl
 import slogger.services.processing.extraction.DataExtractorDaoMongo
 import play.api.libs.iteratee.Iteratee
+import play.api.libs.iteratee.Enumerator
 
 
 class CalculatorTest extends BaseDaoTest {
@@ -64,6 +65,25 @@ class CalculatorTest extends BaseDaoTest {
     println("============================\n" + rez.total.get + "\n--------------")
     println(rez.lines.size)
     
+  }
+  
+  "Iteratee" should "work" in {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    
+    val e = Enumerator.apply(1,2,3,4)
+    val i = Iteratee.fold[Int,Int](0){ case (p1, p2) => 
+      if (p1 == 3) throw new Exception("Ex--------")
+      p1 + p2
+    
+    }
+    
+    try {val rez = twait(e.run(i))
+    println("=2=======================================")
+    println(rez)
+    println("=1=======================================")
+    } catch {
+      case ex => ex.printStackTrace()
+    }
   }
   
 

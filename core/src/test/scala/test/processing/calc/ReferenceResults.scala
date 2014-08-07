@@ -14,11 +14,11 @@ trait ReferenceResults {
   )
   
   val correctRez_AggregationAverageTotal = Map(
-    "average" -> 12.5049213476
+    "[AVERAGE]" -> 12.5049213476
   )
   
   val correctRez_AggregationSumTotal = Map(
-    "sum" -> 420528.0
+    "[SUM]" -> 420528.0
   )
     
   val referenceCalcInterval = new Interval(
