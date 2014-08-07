@@ -6,10 +6,10 @@ import slogger.model.specification.extraction.TimeLimits
 import slogger.model.specification.extraction.SlicingSpecs
 import slogger.model.common.TimePeriod
 import slogger.model.specification.aggregation.AggregationSpecs
-import slogger.services.processing.aggregation.aggregator.onefield.CountAggregator
+import slogger.services.processing.aggregation.aggregators.onefield.CountAggregator
 import play.api.libs.json._
-import slogger.services.processing.aggregation.aggregator.onefield
-import slogger.services.processing.aggregation.aggregator.onefield.SumAggregator
+import slogger.services.processing.aggregation.aggregators.onefield
+import slogger.services.processing.aggregation.aggregators.onefield.SumAggregator
 
 
 class CalculationPlainTest extends BaseCalculationTest {

@@ -25,8 +25,7 @@ trait ReferenceResults {
     new DateTime(2012, 1, 10, 2, 0, 0, 0, DateTimeZone.UTC),
     new DateTime(2012, 1, 10, 19, 0, 0, 0, DateTimeZone.UTC)
   )
-  
-  
+    
   val wholeDataTimeInterval = new Interval(
     new DateTime("2012-01-09T22:00:01.687Z"),
     new DateTime("2012-01-10T21:59:58.339Z")

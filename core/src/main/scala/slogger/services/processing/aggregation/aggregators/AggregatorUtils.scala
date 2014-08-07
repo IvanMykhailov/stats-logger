@@ -1,4 +1,4 @@
-package slogger.services.processing.aggregation.aggregator
+package slogger.services.processing.aggregation.aggregators
 
 import play.api.libs.json._
 import scala.util.Try

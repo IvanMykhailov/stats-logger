@@ -8,8 +8,8 @@ import slogger.model.specification.extraction.TimeLimits
 import slogger.model.specification.extraction.SlicingSpecs
 import slogger.model.common.TimePeriod
 import slogger.model.specification.aggregation.AggregationSpecs
-import slogger.services.processing.aggregation.aggregator.onefield.CountAggregator
-import slogger.services.processing.aggregation.aggregator.onefield
+import slogger.services.processing.aggregation.aggregators.onefield.CountAggregator
+import slogger.services.processing.aggregation.aggregators.onefield
 import play.api.libs.json.Json
 import play.api.libs.json.JsObject
 import slogger.services.processing.extraction.DataExtractorImpl
@@ -66,25 +66,6 @@ class CalculatorTest extends BaseDaoTest {
     println(rez.lines.size)
     
   }
-  
-  "Iteratee" should "work" in {
-    import scala.concurrent.ExecutionContext.Implicits.global
-    
-    val e = Enumerator.apply(1,2,3,4)
-    val i = Iteratee.fold[Int,Int](0){ case (p1, p2) => 
-      if (p1 == 3) throw new Exception("Ex--------")
-      p1 + p2
-    
-    }
-    
-    try {val rez = twait(e.run(i))
-    println("=2=======================================")
-    println(rez)
-    println("=1=======================================")
-    } catch {
-      case ex => ex.printStackTrace()
-    }
-  }
-  
+   
 
 }

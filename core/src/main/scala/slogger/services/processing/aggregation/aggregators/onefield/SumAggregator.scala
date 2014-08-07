@@ -1,4 +1,4 @@
-package slogger.services.processing.aggregation.aggregator.onefield
+package slogger.services.processing.aggregation.aggregators.onefield
 
 import slogger.services.processing.aggregation.Aggregator
 import play.api.libs.iteratee.Enumerator
@@ -9,7 +9,7 @@ import play.api.libs.json.JsObject
 import play.api.libs.json.JsArray
 import play.api.libs.json.JsValue
 import scala.concurrent.Future
-import slogger.services.processing.aggregation.aggregator.AggregatorUtils
+import slogger.services.processing.aggregation.aggregators.AggregatorUtils
 import slogger.model.processing.Slice
 import slogger.model.processing.SliceAggregated
 import slogger.utils.IterateeUtils
