@@ -20,6 +20,10 @@ trait ReferenceResults {
   val correctRez_AggregationSumTotal = Map(
     "[SUM]" -> 420528.0
   )
+  
+  val correctRez_AggregationUniqueTotal = Map(
+    "[UNIQUE_COUNT]" -> 5
+  )
     
   val referenceCalcInterval = new Interval(
     new DateTime(2012, 1, 10, 2, 0, 0, 0, DateTimeZone.UTC),

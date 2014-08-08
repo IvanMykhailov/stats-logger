@@ -20,7 +20,7 @@ class DataExtractorDaoMongo(
     
     val dateFilters = Seq(
       obj("time" -> obj("$gte" -> jsonDate(times.start))),
-      obj("time" -> obj("$lte" -> jsonDate(times.end)))
+      obj("time" -> obj("$lt" -> jsonDate(times.end)))
     )
     
     val query = if (filter.isEmpty || filter.get.fields.isEmpty) {

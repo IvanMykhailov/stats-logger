@@ -14,6 +14,7 @@ import slogger.services.processing.extraction.DataExtractorImpl
 import slogger.services.processing.aggregation.AggregatorResolverImpl
 import slogger.model.processing.SliceAggregated
 import slogger.model.processing.Slice
+import scala.concurrent.Future
 
 
 trait Calculator {
@@ -34,11 +35,15 @@ class CalculatorImpl(
     val data = extractor.extract(specs.extraction, now)
     val aggregator: Aggregator = aggregatorResolver.resolve(specs.aggregation.aggregatorClass, specs.aggregation.config).get
     
-    val aggregated = data.map { case (slice, sliceData) => 
+    val aggregatedF = data.map { case (slice, sliceData) => 
       val future = aggregator.aggregate(slice, sliceData)(executionContext)
       //use await since we don't need simultaneous execution of mongo requests for all slices
-      Await.result(future, scala.concurrent.duration.Duration(60, "minutes"))
+      //Await.result(future, scala.concurrent.duration.Duration(60, "minutes"))
+      future
     }
+    
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val aggregated = Await.result(Future.sequence(aggregatedF), scala.concurrent.duration.Duration(60, "minutes"))
     
     val total = if (aggregator.isSliceMergingSupported) {
       Some(aggregator.mergeSlices(aggregated))

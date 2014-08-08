@@ -11,7 +11,7 @@ class BaseCalculationTest extends BaseDaoTest with ReferenceResults {
   def check(reference: Map[String, Double])(rez: Map[String, BigDecimal]): Unit = {
     reference.keySet shouldBe rez.keySet
     reference.toSeq.foreach { case (k, v) => 
-      rez(k).toDouble shouldBe v +- 0.0000000001      
+      rez(k).toDouble shouldBe v +- 0.0000000001 
     }    
   }
 }

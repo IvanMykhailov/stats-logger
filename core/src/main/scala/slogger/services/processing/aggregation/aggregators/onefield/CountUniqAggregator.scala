@@ -15,37 +15,27 @@ import slogger.model.processing.SliceAggregated
 import slogger.utils.IterateeUtils
 
 
-/**
- * Return count of each value for all found values in specified field.
- * Field can be array of simple types. In that case each array element is count as separate value 
- */
-class CountAggregator(config: JsObject) extends Aggregator {
+
+class CountUniqAggregator(config: JsObject) extends Aggregator {
   val cfg = config.as[Config]
   
-  override def name = "SimpleCountAggregator"
+  val resultKey = "[UNIQUE_COUNT]"
+  
+  override def name = "SimpleCountUniqueAggregator"
    
   override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceAggregated] =
-    dataEnumerator.run(iteratee).map { results =>  
+    dataEnumerator.run(iteratee).map { valueVariants =>  
       SliceAggregated(
         slice,
-        results
+        results = Map(resultKey -> valueVariants.size)
       )
     }
     
   protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
-    Iteratee.fold(Map.empty[String, BigDecimal]) { (state, json: JsObject) => 
+    Iteratee.fold(Set.empty[String]) { (state, json: JsObject) => 
       AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
-        val count = rez.getOrElse(v, BigDecimal(0)) + 1
-        rez + (v -> count)      
+        rez + (v)      
       }
     }
   )
-  
-  override def isSliceMergingSupported = true
-  
-  override def mergeSlices(slices: Seq[SliceAggregated]): Map[String, BigDecimal] = {
-    val merger = AggregatorUtils.merge(_ + _) _
-    merger(slices.map(_.results))
-  } 
-  
 }

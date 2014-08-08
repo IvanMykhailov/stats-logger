@@ -11,21 +11,23 @@ import play.api.libs.json._
 import slogger.services.processing.aggregation.aggregators.onefield
 import slogger.services.processing.aggregation.aggregators.onefield.SumAggregator
 import slogger.services.processing.aggregation.aggregators.onefield.AverageAggregator
+import slogger.services.processing.aggregation.aggregators.onefield.CountUniqAggregator
 
 
 class CalculationPlainTest extends BaseCalculationTest {
 
-  def extractionSpecs(fieldName: String) = ExtractionSpecs(
+  def extractionSpecs(fieldName: String, period: TimePeriod.Value = TimePeriod.Hour) = ExtractionSpecs(
     filter = None,
     projection = Some(Json.obj(fieldName -> 1)),
     timeLimits = TimeLimits(referenceCalcInterval),
     slicing = Some(SlicingSpecs(
-      sliceDuration = TimePeriod.duration(TimePeriod.Hour)
+      sliceDuration = TimePeriod.duration(period)
     )),
     customCollectionName = Some("xlogs")
   ) 
   
   behavior of "Calculator"
+  
   
   it should "calculate counts" in {
     
@@ -48,11 +50,11 @@ class CalculationPlainTest extends BaseCalculationTest {
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),
         config = Json.toJson(onefield.Config("characterLevel")).as[JsObject]
-      ) 
+      )
     )
     
     val rez = calculator.calculate(specs)
-    rez.total.get shouldBe (correctRez_AggregationSumTotal)    
+    rez.total.get shouldBe (correctRez_AggregationSumTotal)
   }
   
   
@@ -67,5 +69,42 @@ class CalculationPlainTest extends BaseCalculationTest {
     
     val rez = calculator.calculate(specs)
     check(correctRez_AggregationAverageTotal)(rez.total.get)    
+  }
+  
+  
+  it should "calculate same totals independently from slices lenght" in {
+    val aggregation = AggregationSpecs(
+        aggregatorClass = classOf[SumAggregator].getName(),
+        config = Json.toJson(onefield.Config("characterLevel")).as[JsObject]
+      )
+    
+    val specs = Bundle(
+      extractionSpecs("characterLevel", TimePeriod.Minute),
+      aggregation 
+    )
+    val rez = calculator.calculate(specs)
+    rez.total.get shouldBe (correctRez_AggregationSumTotal)
+    
+    val specs2 = Bundle(
+      extractionSpecs("characterLevel", TimePeriod.Day),
+      aggregation 
+    )
+    val rez2 = calculator.calculate(specs)
+    rez2.total.get shouldBe (correctRez_AggregationSumTotal)
+    
+  }
+  
+    
+  it should "calculate unique" in {
+    val specs = Bundle(
+      extraction = extractionSpecs("level", TimePeriod.Month),
+      aggregation = AggregationSpecs(
+        aggregatorClass = classOf[CountUniqAggregator].getName(),
+        config = Json.toJson(onefield.Config("level")).as[JsObject]
+      ) 
+    )
+    
+    val rez = calculator.calculate(specs)    
+    rez.lines(0)._2 shouldBe (correctRez_AggregationUniqueTotal)
   }
 }

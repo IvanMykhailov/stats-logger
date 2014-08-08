@@ -39,7 +39,7 @@ abstract class BaseDaoTest extends FlatSpec with Matchers with PropertyChecks {
       println("Require data reloading")
       twait(collection.remove(Json.obj()))
       text.getLines.foreach { line => 
-        val json = Json.parse(line)
+        val json = Json.parse(line).as[JsObject] - ("_id")
         twait(collection.save(json))
       }  
     }
