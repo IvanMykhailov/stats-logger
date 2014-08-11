@@ -11,7 +11,7 @@ import reactivemongo.bson.BSONDocument
 import java.util.UUID
 
 
-trait StatsResultDao {
+trait StatsResultDao extends StatsResultProvider {
   
   def findByBundle(specs: SpecsBundle): Future[Option[StatsResult]]
 

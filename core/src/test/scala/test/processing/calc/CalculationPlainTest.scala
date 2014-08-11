@@ -39,7 +39,7 @@ class CalculationPlainTest extends BaseCalculationTest {
       ) 
     )
     
-    val rez = calculator.calculate(specs)
+    val rez = twait(calculator.calculate(specs))
     rez.total.get shouldBe (correctRez_AggregationCountTotal)
   }
   
@@ -53,7 +53,7 @@ class CalculationPlainTest extends BaseCalculationTest {
       )
     )
     
-    val rez = calculator.calculate(specs)
+    val rez = twait(calculator.calculate(specs))
     rez.total.get shouldBe (correctRez_AggregationSumTotal)
   }
   
@@ -67,7 +67,7 @@ class CalculationPlainTest extends BaseCalculationTest {
       ) 
     )
     
-    val rez = calculator.calculate(specs)
+    val rez = twait(calculator.calculate(specs))
     check(correctRez_AggregationAverageTotal)(rez.total.get)    
   }
   
@@ -82,14 +82,14 @@ class CalculationPlainTest extends BaseCalculationTest {
       extractionSpecs("characterLevel", TimePeriod.Minute),
       aggregation 
     )
-    val rez = calculator.calculate(specs)
+    val rez = twait(calculator.calculate(specs))
     rez.total.get shouldBe (correctRez_AggregationSumTotal)
     
     val specs2 = SpecsBundle(
       extractionSpecs("characterLevel", TimePeriod.Day),
       aggregation 
     )
-    val rez2 = calculator.calculate(specs)
+    val rez2 = twait(calculator.calculate(specs))
     rez2.total.get shouldBe (correctRez_AggregationSumTotal)
     
   }
@@ -104,7 +104,7 @@ class CalculationPlainTest extends BaseCalculationTest {
       ) 
     )
     
-    val rez = calculator.calculate(specs)    
+    val rez = twait(calculator.calculate(specs))    
     rez.lines(0).results shouldBe (correctRez_AggregationUniqueTotal)
   }
 }

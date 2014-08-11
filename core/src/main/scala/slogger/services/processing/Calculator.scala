@@ -15,10 +15,13 @@ import slogger.services.processing.aggregation.AggregatorResolverImpl
 import slogger.model.processing.SliceResult
 import slogger.model.processing.Slice
 import scala.concurrent.Future
+import slogger.services.processing.history.StatsResultDaoMongo
+import slogger.services.processing.history.StatsResultDao
+import slogger.services.processing.history.StatsResultProvider
 
 
 trait Calculator {
-  def calculate(specs: SpecsBundle): StatsResult
+  def calculate(specs: SpecsBundle): Future[StatsResult]
   
 }
 
@@ -26,37 +29,44 @@ trait Calculator {
 class CalculatorImpl(
   extractor: DataExtractor,
   aggregatorResolver: AggregatorResolver,
+  hystoryProvider: StatsResultProvider,
   executionContext: ExecutionContext
 ) extends Calculator {
   
-  override def calculate(specs: SpecsBundle): StatsResult = {
+  implicit val implicitExecutionContext = executionContext
+  
+  override def calculate(specs: SpecsBundle): Future[StatsResult] = {
     val now = DateTime.now
     
-    val data = extractor.extract(specs.extraction, now)
-    val aggregator: Aggregator = aggregatorResolver.resolve(specs.aggregation.aggregatorClass, specs.aggregation.config).get
+    hystoryProvider.findByBundle(specs).flatMap { oldCalcOpt =>
+      val oldSlicesResults = oldCalcOpt.map(_.lines).getOrElse(Seq.empty)      
+      val reusableSlicesResults = oldSlicesResults.filter(_.slice.complete).map(c => (c.slice, c)).toMap
     
-    val aggregatedF = data.map { case (slice, sliceData) => 
-      val future = aggregator.aggregate(slice, sliceData)(executionContext)
-      //use await since we don't need simultaneous execution of mongo requests for all slices
-      //Await.result(future, scala.concurrent.duration.Duration(60, "minutes"))
-      future
+      val data = extractor.extract(specs.extraction, now)
+      val aggregator: Aggregator = aggregatorResolver.resolve(specs.aggregation.aggregatorClass, specs.aggregation.config).get
+      
+      val aggregationFutures = data.map { case (slice, sliceData) =>
+        reusableSlicesResults.get(slice) match {
+          case Some(oldRez) => Future.successful(oldRez)
+          case None => aggregator.aggregate(slice, sliceData)
+        }
+      }
+      
+      Future.sequence(aggregationFutures).map { slicesResults =>
+        val total = if (aggregator.isSliceMergingSupported) {
+          Some(aggregator.mergeSlices(slicesResults))
+        } else {
+          None
+        }   
+        
+        StatsResult(
+          lines = slicesResults,
+          total = total,
+          calcTime = now,
+          bundle = Some(specs)
+        )
+      }
     }
-    
-    import scala.concurrent.ExecutionContext.Implicits.global
-    val aggregated = Await.result(Future.sequence(aggregatedF), scala.concurrent.duration.Duration(60, "minutes"))
-    
-    val total = if (aggregator.isSliceMergingSupported) {
-      Some(aggregator.mergeSlices(aggregated))
-    } else {
-      None
-    }
-    
-    StatsResult(
-      lines = aggregated,
-      total = total,
-      calcTime = now,
-      bundle = Some(specs)
-    )
   }
   
 }
@@ -65,11 +75,14 @@ class CalculatorImpl(
 object Calculator {
   def create(dbProvider: DbProvider): Calculator = {
     val dao = new DataExtractorDaoMongo(dbProvider)
+    val statsResultsDao = new StatsResultDaoMongo(dbProvider)
     val extractor = new DataExtractorImpl(dao)
     val aggregatorResolver = new AggregatorResolverImpl
+    
     new CalculatorImpl(
       extractor,
       aggregatorResolver,
+      statsResultsDao,
       scala.concurrent.ExecutionContext.global
     )
   }  

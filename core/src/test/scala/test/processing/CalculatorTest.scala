@@ -61,7 +61,7 @@ class CalculatorTest extends BaseDaoTest {
       ) 
     )
     
-    val rez = calculator.calculate(specs)
+    val rez = twait(calculator.calculate(specs))
     println("============================\n" + rez.total.get + "\n--------------")
     println(rez.lines.size)
     
