@@ -18,6 +18,7 @@ import scala.concurrent.Future
 import slogger.services.processing.history.StatsResultDaoMongo
 import slogger.services.processing.history.StatsResultDao
 import slogger.services.processing.history.StatsResultProvider
+import slogger.services.processing.extraction.DataExtractorDao
 
 
 trait Calculator {
@@ -47,7 +48,7 @@ class CalculatorImpl(
       
       val aggregationFutures = data.map { case (slice, sliceData) =>
         reusableSlicesResults.get(slice) match {
-          case Some(oldRez) => Future.successful(oldRez)
+          case Some(oldRez) => println("Reused: "+slice);Future.successful(oldRez)
           case None => aggregator.aggregate(slice, sliceData)
         }
       }
@@ -72,18 +73,23 @@ class CalculatorImpl(
 }
 
 
+class CalculatorContext(dbProvider: DbProvider) {
+  lazy val extractionDao: DataExtractorDao = new DataExtractorDaoMongo(dbProvider) 
+  lazy val statsResultsDao: StatsResultDao = new StatsResultDaoMongo(dbProvider)
+  lazy val extractor: DataExtractor = new DataExtractorImpl(extractionDao)
+  lazy val aggregatorResolver: AggregatorResolver = new AggregatorResolverImpl
+  lazy val calculator: Calculator = new CalculatorImpl(
+    extractor,
+    aggregatorResolver,
+    statsResultsDao,
+    scala.concurrent.ExecutionContext.global
+  ) 
+}
+
+
 object Calculator {
   def create(dbProvider: DbProvider): Calculator = {
-    val dao = new DataExtractorDaoMongo(dbProvider)
-    val statsResultsDao = new StatsResultDaoMongo(dbProvider)
-    val extractor = new DataExtractorImpl(dao)
-    val aggregatorResolver = new AggregatorResolverImpl
-    
-    new CalculatorImpl(
-      extractor,
-      aggregatorResolver,
-      statsResultsDao,
-      scala.concurrent.ExecutionContext.global
-    )
+    val context = new CalculatorContext(dbProvider)
+    context.calculator
   }  
 }

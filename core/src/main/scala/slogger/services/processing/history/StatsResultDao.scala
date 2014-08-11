@@ -13,24 +13,8 @@ import java.util.UUID
 
 trait StatsResultDao extends StatsResultProvider {
   
-  def findByBundle(specs: SpecsBundle): Future[Option[StatsResult]]
-
-  def save(statsResult: StatsResult): Future[Unit]
-}
-
-
-class StatsResultDaoMongo(dbProvider: DbProvider) extends StatsResultDao {
-  
-  val statsResultsCollection: BSONCollection = dbProvider.db.collection("statsResults")  
-  
-    
-  def save(statsResult: StatsResult): Future[Unit] = statsResultsCollection.save(statsResult).map(foo => Unit)
-  
-  
   def findByBundle(specs: SpecsBundle): Future[Option[StatsResult]] = {
-    findById(specs.id).map { _.flatMap { rec =>
-      println(rec.bundle.get)
-      println(specs)
+    findByBundleId(specs.id).map { _.flatMap { rec =>
       if (rec.bundle.isDefined && rec.bundle.get.equalsIgnoreTime(specs)) { 
         Some(rec)
       } else {
@@ -38,6 +22,20 @@ class StatsResultDaoMongo(dbProvider: DbProvider) extends StatsResultDao {
       }
     }}
   }
+
+  def save(statsResult: StatsResult): Future[Unit]
+  
+  protected def findByBundleId(id: UUID): Future[Option[StatsResult]]
+}
+
+
+class StatsResultDaoMongo(dbProvider: DbProvider) extends StatsResultDao {
+  
+  val statsResultsCollection: BSONCollection = dbProvider.db.collection("statsResults")  
+  
+  override protected def findByBundleId(id: UUID): Future[Option[StatsResult]] = findById(id)
+    
+  override def save(statsResult: StatsResult): Future[Unit] = statsResultsCollection.save(statsResult).map(foo => Unit)  
   
   def findOne(query: BSONDocument): Future[Option[StatsResult]] = statsResultsCollection.find(query).cursor[StatsResult].headOption
   
@@ -45,3 +43,17 @@ class StatsResultDaoMongo(dbProvider: DbProvider) extends StatsResultDao {
   
 }
 
+
+class StatsResultDaoInmemory extends StatsResultDao {
+  
+  var map: Map[UUID, StatsResult] = Map.empty
+  
+  override def save(statsResult: StatsResult): Future[Unit] = this.synchronized {
+    map = map + (statsResult.bundle.get.id -> statsResult)
+    Future.successful(Unit)
+  }
+  
+  override protected def findByBundleId(id: UUID): Future[Option[StatsResult]] = this.synchronized {
+    Future.successful(map.get(id))
+  }
+}

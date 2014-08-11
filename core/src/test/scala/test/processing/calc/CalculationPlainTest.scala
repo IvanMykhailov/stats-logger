@@ -12,6 +12,9 @@ import slogger.services.processing.aggregation.aggregators.onefield
 import slogger.services.processing.aggregation.aggregators.onefield.SumAggregator
 import slogger.services.processing.aggregation.aggregators.onefield.AverageAggregator
 import slogger.services.processing.aggregation.aggregators.onefield.CountUniqAggregator
+import org.joda.time.DateTime
+import slogger.services.processing.CalculatorContext
+import slogger.services.processing.history.StatsResultDaoInmemory
 
 
 class CalculationPlainTest extends BaseCalculationTest {
@@ -21,7 +24,8 @@ class CalculationPlainTest extends BaseCalculationTest {
     projection = Some(Json.obj(fieldName -> 1)),
     timeLimits = TimeLimits(referenceCalcInterval),
     slicing = Some(SlicingSpecs(
-      sliceDuration = TimePeriod.duration(period)
+      sliceDuration = TimePeriod.duration(period),
+      snapTo = new DateTime(1493L)
     )),
     customCollectionName = Some("xlogs")
   ) 
@@ -73,25 +77,20 @@ class CalculationPlainTest extends BaseCalculationTest {
   
   
   it should "calculate same totals independently from slices lenght" in {
-    val aggregation = AggregationSpecs(
+    Seq(TimePeriod.Minute, TimePeriod.Hour, TimePeriod.Day, TimePeriod.Month).foreach { timePeriod =>
+      
+      val aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),
         config = Json.toJson(onefield.Config("characterLevel")).as[JsObject]
       )
     
-    val specs = SpecsBundle(
-      extractionSpecs("characterLevel", TimePeriod.Minute),
-      aggregation 
-    )
-    val rez = twait(calculator.calculate(specs))
-    rez.total.get shouldBe (correctRez_AggregationSumTotal)
-    
-    val specs2 = SpecsBundle(
-      extractionSpecs("characterLevel", TimePeriod.Day),
-      aggregation 
-    )
-    val rez2 = twait(calculator.calculate(specs))
-    rez2.total.get shouldBe (correctRez_AggregationSumTotal)
-    
+      val specs = SpecsBundle(
+        extractionSpecs("characterLevel", timePeriod),
+        aggregation 
+      )
+      val rez = twait(calculator.calculate(specs))
+      rez.total.get shouldBe (correctRez_AggregationSumTotal)
+    }
   }
   
     
