@@ -5,7 +5,7 @@ import play.api.libs.json.JsObject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import slogger.model.processing.Slice
-import slogger.model.processing.SliceAggregated
+import slogger.model.processing.SliceResult
 import sun.reflect.generics.reflectiveObjects.NotImplementedException
 
 /**
@@ -14,7 +14,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException
 trait Aggregator {
   def name = this.getClass().getName()
   
-  def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceAggregated]
+  def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult]
   
   /**
    * if true than mergeSlices should be implemented
@@ -25,5 +25,5 @@ trait Aggregator {
    * Merge all slices data to one total for whole period. 
    * Throw NotImplementedException if it is impossible, in that case isSliceMergingSupported should be false
    */
-  def mergeSlices(slices: Seq[SliceAggregated]): Map[String, BigDecimal] = throw new NotImplementedException 
+  def mergeSlices(slices: Seq[SliceResult]): Map[String, BigDecimal] = throw new NotImplementedException 
 }

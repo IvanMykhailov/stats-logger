@@ -11,7 +11,7 @@ import play.api.libs.json.JsValue
 import scala.concurrent.Future
 import slogger.services.processing.aggregation.aggregators.AggregatorUtils
 import slogger.model.processing.Slice
-import slogger.model.processing.SliceAggregated
+import slogger.model.processing.SliceResult
 import slogger.utils.IterateeUtils
 
 
@@ -22,9 +22,9 @@ class SumAggregator(config: JsObject) extends Aggregator {
   
   override def name = "SimpleSumAggregator"
    
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceAggregated] =
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] =
     dataEnumerator.run(iteratee).map { sum =>
-      SliceAggregated(
+      SliceResult(
         slice,
         results = Map(resultKey -> sum)
       )
@@ -41,7 +41,7 @@ class SumAggregator(config: JsObject) extends Aggregator {
   
   override def isSliceMergingSupported = true
   
-  override def mergeSlices(slices: Seq[SliceAggregated]): Map[String, BigDecimal] = {
+  override def mergeSlices(slices: Seq[SliceResult]): Map[String, BigDecimal] = {
     val merger = AggregatorUtils.merge(_ + _) _
     merger(slices.map(_.results))
   } 

@@ -7,7 +7,7 @@ trait JsonFormats {
   
   implicit val SliceFormat: Format[Slice] = Json.format[Slice]
   
-  implicit val SliceAggregatedFormat = Json.format[SliceAggregated]
+  implicit val SliceResultFormat = Json.format[SliceResult]
 }
 
 

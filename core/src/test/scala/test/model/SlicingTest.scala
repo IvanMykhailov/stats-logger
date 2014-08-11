@@ -26,45 +26,49 @@ class SlicingTest extends FlatSpec with Matchers with PropertyChecks {
   val interval = new Interval(origin.minusDays(5), origin.plusDays(5))
   val sliceDuration = new Duration(84483654L)//about 1 day
   
-  "Slice sequence start date" should "be less or equal to interval start date" in {
+  "First complete slice start date" should "be greater or equal to interval start date" in {
     forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
-      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval)
-      slices(0).start should be <= interval.start
+      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval).filter(_.complete)
+      slices(0).start should be >= interval.start
     }
   }
     
   it should "be less then sliceDuration near interval start date" in {
     forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
-      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval)      
+      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval).filter(_.complete)      
       Math.abs(slices(0).start.getMillis() - interval.start.getMillis()) should be <= sliceDuration.getMillis()
     }    
   }
   
-  it should "be N*sliceDuration from snapTo date" in {
+  "Slice start date" should "be N*sliceDuration from snapTo date for all slices except first" in {
     forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
       val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval)
-      Math.abs(slices(0).start.getMillis() - snapToDate.getMillis()) % sliceDuration.getMillis() shouldBe 0
+      slices.drop(1).foreach { slice => 
+        Math.abs(slice.start.getMillis() - snapToDate.getMillis()) % sliceDuration.getMillis() shouldBe 0 
+      }
     }
   }
   
-  "Slice sequence end date" should "be greater or equal to interval end date" in {
+  "Last complete slice end date" should "be less or equal to interval end date" in {
     forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
-      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval)
-      slices.last.end should be >= interval.end
+      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval).filter(_.complete)
+      slices.last.end should be <= interval.end
     }
   }
   
   it should "be less then sliceDuration near interval end date" in {
     forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
-      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval)      
+      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval).filter(_.complete)      
       Math.abs(slices.last.end.getMillis() - interval.end.getMillis()) should be <= sliceDuration.getMillis()
     }    
   }
   
-  it should "be N*sliceDuration from snapTo date" in {
+  "Slice end date" should "be N*sliceDuration from snapTo date  for all slices except last" in {
     forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
       val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval)
-      Math.abs(slices.last.end.getMillis() - snapToDate.getMillis()) % sliceDuration.getMillis() shouldBe 0
+      slices.take(slices.length - 1).foreach { slice => 
+        Math.abs(slice.end.getMillis() - snapToDate.getMillis()) % sliceDuration.getMillis() shouldBe 0 
+      }
     }
   }
  
@@ -78,19 +82,6 @@ class SlicingTest extends FlatSpec with Matchers with PropertyChecks {
    
   val requiredSliceCount = Math.ceil(interval.toDurationMillis().toDouble / sliceDuration.getMillis()).toInt
   
-  "Border slice" should "be incomplete if it are outside interval" in {
-    forAll(Gen.choose(origin.minusDays(10), origin.plusDays(10))) { (snapToDate: DateTime) =>
-      val slices = SlicingSpecs(sliceDuration, snapToDate).getSlicesFor(interval)
-      
-      slices foreach { slice =>
-        if (isNested(interval, slice.toInterval)) {
-          slice.complete shouldBe true
-        } else {
-          slice.complete shouldBe false
-        }
-      }
-    }
-  }
-  
+    
   def isNested(outer: Interval, inner: Interval): Boolean = outer.contains(inner.start) && outer.contains(inner.end)
 }

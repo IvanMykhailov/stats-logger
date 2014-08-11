@@ -11,7 +11,7 @@ import play.api.libs.json.JsValue
 import scala.concurrent.Future
 import slogger.services.processing.aggregation.aggregators.AggregatorUtils
 import slogger.model.processing.Slice
-import slogger.model.processing.SliceAggregated
+import slogger.model.processing.SliceResult
 import slogger.utils.IterateeUtils
 import play.api.libs.json.Json
 import play.api.libs.json.Format
@@ -26,9 +26,9 @@ class AverageAggregator(config: JsObject) extends Aggregator {
   
   override def name = "SimpleSumAggregator"
    
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceAggregated] =
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] =
     dataEnumerator.run(iteratee).map { tmpRez =>
-      SliceAggregated(
+      SliceResult(
         slice,
         results = Map(resultKey -> tmpRez.sum / tmpRez.count),
         meta = Json.toJson(tmpRez)
@@ -52,7 +52,7 @@ class AverageAggregator(config: JsObject) extends Aggregator {
   
   override def isSliceMergingSupported = true
   
-  override def mergeSlices(slices: Seq[SliceAggregated]): Map[String, BigDecimal] = {
+  override def mergeSlices(slices: Seq[SliceResult]): Map[String, BigDecimal] = {
     val tmpRez = slices.map(_.meta.as[TmpRez]).reduce(_ + _)
     Map(resultKey -> tmpRez.sum / tmpRez.count)
   } 

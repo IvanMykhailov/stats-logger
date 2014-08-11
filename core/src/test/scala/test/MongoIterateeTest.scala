@@ -34,7 +34,6 @@ class MongoIterateeTest extends FlatSpec with Matchers {
     import scala.concurrent.ExecutionContext.Implicits.global
     val it = Iteratee.foreach { i: Int => 
       if (i == 4) throw new Exception("!myException!")
-      println(i)
     }
     val wit = IterateeUtils.wrapExceptionToError(it)    
     val rez = Enumerator(1,2,3,4,5).run(wit)

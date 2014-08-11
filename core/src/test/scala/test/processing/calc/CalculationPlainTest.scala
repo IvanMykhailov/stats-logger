@@ -1,6 +1,6 @@
 package test.processing.calc
 
-import slogger.model.specification.Bundle
+import slogger.model.specification.SpecsBundle
 import slogger.model.specification.extraction.ExtractionSpecs
 import slogger.model.specification.extraction.TimeLimits
 import slogger.model.specification.extraction.SlicingSpecs
@@ -31,7 +31,7 @@ class CalculationPlainTest extends BaseCalculationTest {
   
   it should "calculate counts" in {
     
-    val specs = Bundle(
+    val specs = SpecsBundle(
       extraction = extractionSpecs("level"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[CountAggregator].getName(),
@@ -45,7 +45,7 @@ class CalculationPlainTest extends BaseCalculationTest {
   
   
   it should "calculate sum" in {
-    val specs = Bundle(
+    val specs = SpecsBundle(
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),
@@ -59,7 +59,7 @@ class CalculationPlainTest extends BaseCalculationTest {
   
   
   it should "calculate average" in {
-    val specs = Bundle(
+    val specs = SpecsBundle(
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[AverageAggregator].getName(),
@@ -78,14 +78,14 @@ class CalculationPlainTest extends BaseCalculationTest {
         config = Json.toJson(onefield.Config("characterLevel")).as[JsObject]
       )
     
-    val specs = Bundle(
+    val specs = SpecsBundle(
       extractionSpecs("characterLevel", TimePeriod.Minute),
       aggregation 
     )
     val rez = calculator.calculate(specs)
     rez.total.get shouldBe (correctRez_AggregationSumTotal)
     
-    val specs2 = Bundle(
+    val specs2 = SpecsBundle(
       extractionSpecs("characterLevel", TimePeriod.Day),
       aggregation 
     )
@@ -96,7 +96,7 @@ class CalculationPlainTest extends BaseCalculationTest {
   
     
   it should "calculate unique" in {
-    val specs = Bundle(
+    val specs = SpecsBundle(
       extraction = extractionSpecs("level", TimePeriod.Month),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[CountUniqAggregator].getName(),
@@ -105,6 +105,6 @@ class CalculationPlainTest extends BaseCalculationTest {
     )
     
     val rez = calculator.calculate(specs)    
-    rez.lines(0)._2 shouldBe (correctRez_AggregationUniqueTotal)
+    rez.lines(0).results shouldBe (correctRez_AggregationUniqueTotal)
   }
 }

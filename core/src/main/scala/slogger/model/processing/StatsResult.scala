@@ -1,6 +1,14 @@
 package slogger.model.processing
 
-case class StatsResult(
-  lines: Seq[(Slice, Map[String, BigDecimal])],  
-  total: Option[Map[String, BigDecimal]]
+import java.util.UUID
+import slogger.model.specification.SpecsBundle
+import org.joda.time.DateTime
+
+
+case class StatsResult(  
+  lines: Seq[SliceResult],  
+  total: Option[Map[String, BigDecimal]],
+  calcTime: DateTime,
+  
+  bundle: Option[SpecsBundle] = None
 )

@@ -1,6 +1,6 @@
 package slogger.services.processing
 
-import slogger.model.specification.Bundle
+import slogger.model.specification.SpecsBundle
 import slogger.model.processing.StatsResult
 import slogger.services.processing.extraction.DataExtractor
 import slogger.services.processing.aggregation.AggregatorResolver
@@ -12,13 +12,13 @@ import slogger.services.processing.extraction.DbProvider
 import slogger.services.processing.extraction.DataExtractorDaoMongo
 import slogger.services.processing.extraction.DataExtractorImpl
 import slogger.services.processing.aggregation.AggregatorResolverImpl
-import slogger.model.processing.SliceAggregated
+import slogger.model.processing.SliceResult
 import slogger.model.processing.Slice
 import scala.concurrent.Future
 
 
 trait Calculator {
-  def calculate(specs: Bundle): StatsResult
+  def calculate(specs: SpecsBundle): StatsResult
   
 }
 
@@ -29,7 +29,7 @@ class CalculatorImpl(
   executionContext: ExecutionContext
 ) extends Calculator {
   
-  override def calculate(specs: Bundle): StatsResult = {
+  override def calculate(specs: SpecsBundle): StatsResult = {
     val now = DateTime.now
     
     val data = extractor.extract(specs.extraction, now)
@@ -52,13 +52,13 @@ class CalculatorImpl(
     }
     
     StatsResult(
-      lines = onlyData(aggregated),
-      total = total
+      lines = aggregated,
+      total = total,
+      calcTime = now,
+      bundle = Some(specs)
     )
   }
   
-  protected def onlyData(aggregated: Seq[SliceAggregated]): Seq[(Slice, Map[String, BigDecimal])] = 
-    aggregated.map { a => (a.slice, a.results)}
 }
 
 
