@@ -7,8 +7,5 @@ import org.joda.time.DateTime
 
 case class StatsResult(  
   lines: Seq[SliceResult],  
-  total: Option[Map[String, BigDecimal]],
-  calcTime: DateTime,
-  
-  bundle: Option[SpecsBundle] = None
+  total: Option[Map[String, BigDecimal]]
 )

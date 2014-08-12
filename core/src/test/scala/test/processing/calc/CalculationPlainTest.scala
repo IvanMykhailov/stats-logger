@@ -14,7 +14,6 @@ import slogger.services.processing.aggregation.aggregators.onefield.AverageAggre
 import slogger.services.processing.aggregation.aggregators.onefield.CountUniqAggregator
 import org.joda.time.DateTime
 import slogger.services.processing.CalculatorContext
-import slogger.services.processing.history.StatsResultDaoInmemory
 
 
 class CalculationPlainTest extends BaseCalculationTest {

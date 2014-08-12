@@ -15,10 +15,12 @@ import slogger.services.processing.aggregation.AggregatorResolverImpl
 import slogger.model.processing.SliceResult
 import slogger.model.processing.Slice
 import scala.concurrent.Future
-import slogger.services.processing.history.StatsResultDaoMongo
-import slogger.services.processing.history.StatsResultDao
 import slogger.services.processing.history.StatsResultProvider
 import slogger.services.processing.extraction.DataExtractorDao
+import slogger.model.processing.CalculationResult
+import slogger.services.processing.history.CalculationResultDaoMongo
+import slogger.services.processing.history.CalculationResultDao
+import slogger.services.processing.history.StatsResultProviderByDao
 
 
 trait Calculator {
@@ -62,9 +64,7 @@ class CalculatorImpl(
         
         StatsResult(
           lines = slicesResults,
-          total = total,
-          calcTime = now,
-          bundle = Some(specs)
+          total = total
         )
       }
     }
@@ -75,13 +75,14 @@ class CalculatorImpl(
 
 class CalculatorContext(dbProvider: DbProvider) {
   lazy val extractionDao: DataExtractorDao = new DataExtractorDaoMongo(dbProvider) 
-  lazy val statsResultsDao: StatsResultDao = new StatsResultDaoMongo(dbProvider)
+  lazy val calculationResultDao: CalculationResultDao = new CalculationResultDaoMongo(dbProvider)
+  lazy val statsResultProvider: StatsResultProvider = new StatsResultProviderByDao(calculationResultDao)
   lazy val extractor: DataExtractor = new DataExtractorImpl(extractionDao)
   lazy val aggregatorResolver: AggregatorResolver = new AggregatorResolverImpl
   lazy val calculator: Calculator = new CalculatorImpl(
     extractor,
     aggregatorResolver,
-    statsResultsDao,
+    statsResultProvider,
     scala.concurrent.ExecutionContext.global
   ) 
 }

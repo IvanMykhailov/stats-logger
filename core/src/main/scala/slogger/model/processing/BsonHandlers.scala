@@ -17,19 +17,18 @@ trait BsonHandlers extends slogger.model.common.BsonHandlers {
   
   implicit val SliceResultHandler = Macros.handler[SliceResult]
     
+  implicit val StatsErrorHandler = Macros.handler[StatsError]
   
-  implicit val StatsResultHandler = {
+  implicit val StatsResultHandler = Macros.handler[StatsResult]
+  
+  
+  implicit val CalculationResultHandler = {
     import slogger.model.specification.BsonHandlers.SpecsBundleHandler
-    implicit val internalHandler = Macros.handler[StatsResult]
+    implicit val internalHandler = Macros.handler[CalculationResult]
     
-    new BSONHandler[BSONDocument, StatsResult] with BSONDocumentWriter[StatsResult] with BSONDocumentReader[StatsResult]{    
-      def copyId(bson: BSONDocument): BSONDocument = {
-        val bundle = bson.getAs[BSONDocument]("bundle").get
-        val id = bundle.get("id").get
-        bson ++ BSONDocument("_id" -> id)        
-      }       
-      def read(bson: BSONDocument): StatsResult = internalHandler.read(bson)      
-      def write(e: StatsResult): BSONDocument = copyId(internalHandler.write(e))
+    new BSONHandler[BSONDocument, CalculationResult] with BSONDocumentWriter[CalculationResult] with BSONDocumentReader[CalculationResult]{
+      def read(bson: BSONDocument): CalculationResult = internalHandler.read(bson)      
+      def write(e: CalculationResult): BSONDocument = internalHandler.write(e) ++ BSONDocument("_id" -> e.bundle.id) 
     }
   }
 }

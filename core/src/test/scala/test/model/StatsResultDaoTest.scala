@@ -7,8 +7,6 @@ import slogger.model.specification.SpecsBundle
 import slogger.model.specification.extraction.ExtractionSpecs
 import slogger.model.specification.extraction.SlicingSpecs
 import slogger.model.specification.extraction.TimeLimits
-import slogger.services.processing.history.StatsResultDao
-import slogger.services.processing.history.StatsResultDaoMongo
 import test.processing.BaseDaoTest
 import org.joda.time.DateTime
 import slogger.model.specification.aggregation.AggregationSpecs
@@ -18,12 +16,16 @@ import reactivemongo.bson.BSONDocument
 import org.joda.time.Duration
 import reactivemongo.bson.Macros
 import org.joda.time.Interval
+import slogger.services.processing.history.CalculationResultDaoMongo
+import slogger.services.processing.history.CalculationResultDao
+import slogger.model.processing.CalculationResult
 
 
 class StatsResultDaoTest extends BaseDaoTest {
   
-  val dao: StatsResultDao = new StatsResultDaoMongo(dbProvider)
+  val dao: CalculationResultDao = new CalculationResultDaoMongo(dbProvider)
 
+  
   def newSpecsBundle() = {
     val extraction = ExtractionSpecs(
       filter = None,
@@ -45,12 +47,19 @@ class StatsResultDaoTest extends BaseDaoTest {
     )
   }
   
-  def newStatsResult(specs: SpecsBundle) = StatsResult(
-    lines = Seq.empty,
-    total = None,
-    calcTime = DateTime.now,
-    bundle = Some(specs)
-  )
+  
+  def newCalcResult(specs: SpecsBundle) = {
+    val statsRez = StatsResult(
+      lines = Seq.empty,
+      total = None
+    )    
+    CalculationResult(
+      bundle = specs,
+      calculatedAt = DateTime.now,
+      statsResult = Some(statsRez)
+    )
+  }
+  
   
   "BigDecimal" should "be equal" in {
     val bd1 = BigDecimal("1.0")
@@ -60,12 +69,14 @@ class StatsResultDaoTest extends BaseDaoTest {
     
   }
   
+  
   "SlicingSpecs" should "be (de)serialized" in {
     val s = newSpecsBundle().extraction.slicing.get    
     val bson = BsonHandlers.SlicingSpecsHandler.write(s)
     val loaded = BsonHandlers.SlicingSpecsHandler.read(bson)    
     loaded should be (s)   
   }
+  
   
   "SpecsBundle" should "be (de)serialized" in {
     val b = newSpecsBundle()    
@@ -74,46 +85,49 @@ class StatsResultDaoTest extends BaseDaoTest {
     loaded should be (b)    
   }
   
-  "StatsResultDao" should "save stats" in {
-    val f = dao.save(newStatsResult(newSpecsBundle()))
+  
+  "CalculationResultDao" should "save stats" in {
+    val f = dao.save(newCalcResult(newSpecsBundle()))
     twait(f)
   }
   
+  
   it should "load saved stats by bundle" in {
     val bundle = newSpecsBundle()
-    val statsRez = newStatsResult(bundle)
-    twait(dao.save(statsRez))    
+    val calcRez = newCalcResult(bundle)
+    twait(dao.save(calcRez))    
     val loaded = twait(dao.findByBundle(bundle))    
-    loaded.get should be (statsRez)
+    loaded.get should be (calcRez)
   }
+  
   
   it should "not load stats if bundle is changed, even if id is same" in {
     val bundle = newSpecsBundle()
-    val statsRez = newStatsResult(bundle)
+    val calcRez = newCalcResult(bundle)
     
     val dbundle = bundle.copy(
       extraction = bundle.extraction.copy(
         customCollectionName = Some("test2")
       )    
     )    
-    twait(dao.save(statsRez))    
+    twait(dao.save(calcRez))    
     val loaded = twait(dao.findByBundle(dbundle))    
     loaded should be (None)
   }
   
-  it should "load saved stats by bundle even if time period is different" in {
-    
+  
+  it should "load saved stats by bundle even if time period is different" in {    
     val bundle = newSpecsBundle()
-    val statsRez = newStatsResult(bundle)
+    val calcRez = newCalcResult(bundle)
     
     val dbundle = bundle.copy(
       extraction = bundle.extraction.copy(
         timeLimits = TimeLimits(new Interval(DateTime.now, DateTime.now))
       )    
     )    
-    twait(dao.save(statsRez))    
+    twait(dao.save(calcRez))    
     val loaded = twait(dao.findByBundle(dbundle))    
-    loaded.get should be (statsRez)    
+    loaded.get should be (calcRez)    
   }
 }
 

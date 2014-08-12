@@ -7,24 +7,26 @@ import slogger.model.specification.extraction.TimeLimits
 import slogger.model.specification.extraction.SlicingSpecs
 import org.joda.time.DateTime
 import slogger.services.processing.CalculatorContext
-import slogger.services.processing.history.StatsResultDaoInmemory
 import slogger.model.specification.SpecsBundle
 import slogger.model.specification.aggregation.AggregationSpecs
 import slogger.services.processing.aggregation.aggregators.onefield.SumAggregator
 import slogger.services.processing.aggregation.aggregators.onefield
 import slogger.model.processing.StatsResult
 import slogger.model.processing.SliceResult
+import slogger.services.processing.history.StatsResultProvider
+import slogger.services.processing.history.StatsResultProviderStub
 
 
 class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
 
-  val rezDao = new StatsResultDaoInmemory
   
-  val context = new CalculatorContext(dbProvider) {
-    override lazy val statsResultsDao = rezDao
+  def calculator(bundle: SpecsBundle, statsResult: StatsResult) = {   
+    val context = new CalculatorContext(dbProvider) {
+      override lazy val statsResultProvider: StatsResultProvider = new StatsResultProviderStub(bundle, statsResult)
+    }
+    context.calculator
   }
   
-  override val calculator = context.calculator
   
   def extractionSpecs(fieldName: String, period: TimePeriod.Value = TimePeriod.Hour) = ExtractionSpecs(
     filter = None,
@@ -36,9 +38,10 @@ class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
     )),
     customCollectionName = Some("xlogs")
   ) 
+
   
   behavior of "Calculator"
-
+  
   
   it should "reuse old calculation" in {
     val specs = SpecsBundle(
@@ -55,13 +58,12 @@ class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
     
     val oldStatRez = StatsResult(
       lines = oldSlices,  
-      total = None,
-      calcTime = new DateTime(0),
-      bundle = Some(specs)    
+      total = None
     )
-    rezDao.save(oldStatRez)
     
-    val rez = twait(calculator.calculate(specs))
+    val calc = calculator(specs, oldStatRez)
+    
+    val rez = twait(calc.calculate(specs))
     rez.total.get shouldBe (correctRez_AggregationSumTotal)    
   }
 }
