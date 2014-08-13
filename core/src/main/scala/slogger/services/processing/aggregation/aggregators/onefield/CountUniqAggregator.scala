@@ -23,13 +23,15 @@ class CountUniqAggregator(config: JsObject) extends Aggregator {
   
   override def name = "SimpleCountUniqueAggregator"
    
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] =
-    dataEnumerator.run(iteratee).map { valueVariants =>  
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
+    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)
+    rezF.map { valueVariants =>  
       SliceResult(
         slice,
         results = Map(resultKey -> valueVariants.size)
       )
     }
+  }
     
   protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
     Iteratee.fold(Set.empty[String]) { (state, json: JsObject) => 

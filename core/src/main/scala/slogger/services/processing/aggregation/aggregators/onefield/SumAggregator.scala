@@ -22,13 +22,16 @@ class SumAggregator(config: JsObject) extends Aggregator {
   
   override def name = "SimpleSumAggregator"
    
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] =
-    dataEnumerator.run(iteratee).map { sum =>
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
+    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)  
+  
+    rezF.map { sum =>
       SliceResult(
         slice,
         results = Map(resultKey -> sum)
       )
     }
+  }
     
   protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
     Iteratee.fold(BigDecimal(0)) { (state: BigDecimal, json: JsObject) => 

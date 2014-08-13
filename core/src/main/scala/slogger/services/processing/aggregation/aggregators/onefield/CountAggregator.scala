@@ -13,6 +13,9 @@ import slogger.services.processing.aggregation.aggregators.AggregatorUtils
 import slogger.model.processing.Slice
 import slogger.model.processing.SliceResult
 import slogger.utils.IterateeUtils
+import play.api.libs.iteratee.Step
+import slogger.model.processing.AggregationException
+import play.api.libs.iteratee.Input
 
 
 /**
@@ -23,20 +26,23 @@ class CountAggregator(config: JsObject) extends Aggregator {
   val cfg = config.as[Config]
   
   override def name = "SimpleCountAggregator"
-   
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] =
-    dataEnumerator.run(iteratee).map { results =>  
+
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
+    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)
+    
+    rezF.map { results =>  
       SliceResult(
         slice,
         results
       )
     }
+  }
     
   protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
     Iteratee.fold(Map.empty[String, BigDecimal]) { (state, json: JsObject) => 
       AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
         val count = rez.getOrElse(v, BigDecimal(0)) + 1
-        rez + (v -> count)      
+        rez + (v -> count)
       }
     }
   )

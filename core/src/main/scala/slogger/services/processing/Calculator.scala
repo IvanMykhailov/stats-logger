@@ -21,10 +21,14 @@ import slogger.model.processing.CalculationResult
 import slogger.services.processing.history.CalculationResultDaoMongo
 import slogger.services.processing.history.CalculationResultDao
 import slogger.services.processing.history.StatsResultProviderByDao
+import play.api.libs.iteratee.Enumerator
+import play.api.libs.iteratee.Input
+import slogger.model.processing.AggregationException
+import slogger.model.processing.StatsError
 
 
 trait Calculator {
-  def calculate(specs: SpecsBundle): Future[StatsResult]
+  def calculate(specs: SpecsBundle): Future[CalculationResult]
   
 }
 
@@ -38,9 +42,30 @@ class CalculatorImpl(
   
   implicit val implicitExecutionContext = executionContext
   
-  override def calculate(specs: SpecsBundle): Future[StatsResult] = {
+  
+  override def calculate(specs: SpecsBundle): Future[CalculationResult] = {
     val now = DateTime.now
     
+    val calcFuture = calculateInt(specs, now)
+    
+    calcFuture.map { rez => 
+      CalculationResult(  
+        bundle = specs,
+        calculatedAt = now,
+        statsResult = Some(rez)
+      )    
+    }.recover {
+      case aex: AggregationException =>
+        CalculationResult(  
+        bundle = specs,
+        calculatedAt = now,
+        statsError = Some(StatsError(aex.getMessage, aex.errorDocument))
+      )
+    }
+  }
+  
+  
+  protected def calculateInt(specs: SpecsBundle, now: DateTime): Future[StatsResult] = {    
     hystoryProvider.findByBundle(specs).flatMap { oldCalcOpt =>
       val oldSlicesResults = oldCalcOpt.map(_.lines).getOrElse(Seq.empty)      
       val reusableSlicesResults = oldSlicesResults.filter(_.slice.complete).map(c => (c.slice, c)).toMap
@@ -51,7 +76,7 @@ class CalculatorImpl(
       val aggregationFutures = data.map { case (slice, sliceData) =>
         reusableSlicesResults.get(slice) match {
           case Some(oldRez) => println("Reused: "+slice);Future.successful(oldRez)
-          case None => aggregator.aggregate(slice, sliceData)
+          case None => aggregator.aggregate(slice, sliceData >>> Enumerator.enumInput(Input.EOF))
         }
       }
       

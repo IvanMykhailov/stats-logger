@@ -26,14 +26,17 @@ class AverageAggregator(config: JsObject) extends Aggregator {
   
   override def name = "SimpleSumAggregator"
    
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] =
-    dataEnumerator.run(iteratee).map { tmpRez =>
+  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
+    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)
+    
+    rezF.map { tmpRez =>
       SliceResult(
         slice,
         results = Map(resultKey -> tmpRez.sum / tmpRez.count),
         meta = Json.toJson(tmpRez)
       )
     }
+  }
     
   protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
     Iteratee.fold(TmpRez()) { (state: TmpRez, json: JsObject) => 

@@ -43,7 +43,7 @@ class CalculationPlainTest extends BaseCalculationTest {
     )
     
     val rez = twait(calculator.calculate(specs))
-    rez.total.get shouldBe (correctRez_AggregationCountTotal)
+    rez.statsResult.get.total.get shouldBe (correctRez_AggregationCountTotal)
   }
   
   
@@ -57,7 +57,7 @@ class CalculationPlainTest extends BaseCalculationTest {
     )
     
     val rez = twait(calculator.calculate(specs))
-    rez.total.get shouldBe (correctRez_AggregationSumTotal)
+    rez.statsResult.get.total.get shouldBe (correctRez_AggregationSumTotal)
   }
   
   
@@ -71,7 +71,7 @@ class CalculationPlainTest extends BaseCalculationTest {
     )
     
     val rez = twait(calculator.calculate(specs))
-    check(correctRez_AggregationAverageTotal)(rez.total.get)    
+    check(correctRez_AggregationAverageTotal)(rez.statsResult.get.total.get)    
   }
   
   
@@ -88,7 +88,7 @@ class CalculationPlainTest extends BaseCalculationTest {
         aggregation 
       )
       val rez = twait(calculator.calculate(specs))
-      rez.total.get shouldBe (correctRez_AggregationSumTotal)
+      rez.statsResult.get.total.get shouldBe (correctRez_AggregationSumTotal)
     }
   }
   
@@ -103,6 +103,6 @@ class CalculationPlainTest extends BaseCalculationTest {
     )
     
     val rez = twait(calculator.calculate(specs))    
-    rez.lines(0).results shouldBe (correctRez_AggregationUniqueTotal)
+    rez.statsResult.get.lines(0).results shouldBe (correctRez_AggregationUniqueTotal)
   }
 }

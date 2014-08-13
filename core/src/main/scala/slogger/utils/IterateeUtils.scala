@@ -9,6 +9,8 @@ import scala.concurrent.Await
 import scala.util.control.NonFatal
 import play.api.libs.iteratee.Input
 import scala.concurrent.duration.Duration
+import play.api.libs.json.JsObject
+import slogger.model.processing.AggregationException
 
 
 object IterateeUtils {
@@ -37,4 +39,15 @@ object IterateeUtils {
     }
   }
   
+  
+  def unwrapErrortoException[A](step: Step[JsObject, A]): A = step match {
+    case Step.Done(rez, remaining) => rez
+      case Step.Error(msg, input) => 
+        val errorInput = input match { 
+          case Input.El(e) => Some(e)
+          case _ => None
+        }        
+        throw new AggregationException(msg, errorInput)
+      case _: Step.Cont[_,_] => throw new AggregationException("Future is in Cont step even when enumerator is finished") 
+  }
 }
