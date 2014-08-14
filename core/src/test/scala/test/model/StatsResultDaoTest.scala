@@ -19,6 +19,7 @@ import org.joda.time.Interval
 import slogger.services.processing.history.CalculationResultDaoMongo
 import slogger.services.processing.history.CalculationResultDao
 import slogger.model.processing.CalculationResult
+import slogger.model.processing.CalculationMetaStats
 
 
 class StatsResultDaoTest extends BaseDaoTest {
@@ -56,6 +57,7 @@ class StatsResultDaoTest extends BaseDaoTest {
     CalculationResult(
       bundle = specs,
       calculatedAt = DateTime.now,
+      metaStats = CalculationMetaStats(1, 1, new Duration(1)),
       statsResult = Some(statsRez)
     )
   }

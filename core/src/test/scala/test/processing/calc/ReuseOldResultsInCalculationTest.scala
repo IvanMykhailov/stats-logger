@@ -64,6 +64,7 @@ class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
     val calc = calculator(specs, oldStatRez)
     
     val rez = twait(calc.calculate(specs))
+    println(rez.statsError)
     rez.statsResult.get.total.get shouldBe (correctRez_AggregationSumTotal)    
   }
 }

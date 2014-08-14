@@ -13,35 +13,30 @@ import slogger.services.processing.aggregation.aggregators.AggregatorUtils
 import slogger.model.processing.Slice
 import slogger.model.processing.SliceResult
 import slogger.utils.IterateeUtils
+import play.api.libs.iteratee.Enumeratee
+import slogger.services.processing.aggregation.aggregators.FoldAggregator
 
 
-class SumAggregator(config: JsObject) extends Aggregator {
+class SumAggregator(config: JsObject) extends FoldAggregator[BigDecimal] {
   val cfg = config.as[Config]
   
   val resultKey = "[SUM]"
   
   override def name = "SimpleSumAggregator"
-   
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
-    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)  
-  
-    rezF.map { sum =>
-      SliceResult(
-        slice,
-        results = Map(resultKey -> sum)
-      )
-    }
-  }
     
-  protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
-    Iteratee.fold(BigDecimal(0)) { (state: BigDecimal, json: JsObject) => 
-      AggregatorUtils.numberValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
-        rez + v    
-      }
-    }
-  )
+  //Slice aggregation
+  protected def foldInitState = BigDecimal(0)
   
+  protected def folder(state: BigDecimal, json: JsObject) = AggregatorUtils.numberValues(json\(cfg.fieldName)).fold(state)(_ + _)
   
+  protected def resultMapper(slice: Slice, sum: BigDecimal) = 
+    SliceResult(
+      slice,
+      results = Map(resultKey -> sum)
+    )
+    
+    
+  //Total aggregation
   override def isSliceMergingSupported = true
   
   override def mergeSlices(slices: Seq[SliceResult]): Map[String, BigDecimal] = {

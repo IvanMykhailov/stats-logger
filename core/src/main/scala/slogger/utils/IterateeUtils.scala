@@ -11,12 +11,34 @@ import play.api.libs.iteratee.Input
 import scala.concurrent.duration.Duration
 import play.api.libs.json.JsObject
 import slogger.model.processing.AggregationException
+import scala.util.{Try, Success, Failure}
+import play.api.libs.iteratee.Cont
+import play.api.libs.iteratee.Done
 
 
 object IterateeUtils {
   
-  def wrapExceptionToError[E, A](it: Iteratee[E, A]): Iteratee[E, A] = {
-    new Iteratee[E, A] {      
+  
+  def foldWithExceptionHandling[E, A](state: A)(f: (A, E) => A): Iteratee[E, A] = {
+    def step(s: A)(i: Input[E]): Iteratee[E, A] = i match {
+      case Input.EOF => 
+        Done(s, Input.EOF)
+      case Input.Empty => 
+        Cont[E, A](step(s))
+      case Input.El(e) => 
+        try {
+          val a = f(s, e); 
+          Cont[E, A](step(a))
+        } catch {
+          case NonFatal(ex) => Error(ex.getMessage(), i)
+        }   
+    }
+    (Cont[E, A](step(state)))
+   }
+  
+  
+  /*def wrapExceptionToError[E, A](it: Iteratee[E, A]): Iteratee[E, A] = {
+    new Iteratee[E, A] {
       def fold[B](folder: Step[E, A] => Future[B])(implicit ec: ExecutionContext): Future[B] = {
         def newFolder(step: Step[E, A]): Future[B] = {
           val newStep = step match {
@@ -37,7 +59,7 @@ object IterateeUtils {
         it.fold(newFolder)(scala.concurrent.ExecutionContext.Implicits.global)
       }
     }
-  }
+  }*/
   
   
   def unwrapErrortoException[A](step: Step[JsObject, A]): A = step match {

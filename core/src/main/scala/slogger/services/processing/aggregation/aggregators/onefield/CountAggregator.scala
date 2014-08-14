@@ -16,37 +16,36 @@ import slogger.utils.IterateeUtils
 import play.api.libs.iteratee.Step
 import slogger.model.processing.AggregationException
 import play.api.libs.iteratee.Input
+import slogger.services.processing.aggregation.aggregators.FoldAggregator
 
 
 /**
  * Return count of each value for all found values in specified field.
  * Field can be array of simple types. In that case each array element is count as separate value 
  */
-class CountAggregator(config: JsObject) extends Aggregator {
+class CountAggregator(config: JsObject) extends FoldAggregator[Map[String, BigDecimal]] {
   val cfg = config.as[Config]
   
   override def name = "SimpleCountAggregator"
 
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
-    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)
     
-    rezF.map { results =>  
-      SliceResult(
-        slice,
-        results
-      )
-    }
-  }
-    
-  protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
-    Iteratee.fold(Map.empty[String, BigDecimal]) { (state, json: JsObject) => 
-      AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
-        val count = rez.getOrElse(v, BigDecimal(0)) + 1
-        rez + (v -> count)
-      }
-    }
-  )
+  //Slice aggregation
+  protected def foldInitState = Map.empty
   
+  protected def folder(state: Map[String, BigDecimal], json: JsObject) = 
+    AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
+      val count = rez.getOrElse(v, BigDecimal(0)) + 1
+      rez + (v -> count)
+    }
+  
+  protected def resultMapper(slice: Slice, rez: Map[String, BigDecimal]) = 
+    SliceResult(
+      slice,
+      results = rez
+    )
+    
+  
+  //Total aggregation
   override def isSliceMergingSupported = true
   
   override def mergeSlices(slices: Seq[SliceResult]): Map[String, BigDecimal] = {

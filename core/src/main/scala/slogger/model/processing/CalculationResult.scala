@@ -8,9 +8,12 @@ import org.joda.time.Duration
 case class CalculationResult(  
   bundle: SpecsBundle,
   calculatedAt: DateTime,
+  metaStats: CalculationMetaStats,
   
   statsResult: Option[StatsResult] = None,
   statsError: Option[StatsError] = None
 ) {
   if (statsResult.isEmpty == statsError.isEmpty) throw new IllegalArgumentException("Specify only one of statsResult or statsError")
+  
+  def isError = statsError.isDefined
 }

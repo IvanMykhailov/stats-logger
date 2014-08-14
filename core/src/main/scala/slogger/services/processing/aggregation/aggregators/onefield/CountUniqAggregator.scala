@@ -13,31 +13,28 @@ import slogger.services.processing.aggregation.aggregators.AggregatorUtils
 import slogger.model.processing.Slice
 import slogger.model.processing.SliceResult
 import slogger.utils.IterateeUtils
+import slogger.services.processing.aggregation.aggregators.FoldAggregator
 
 
 
-class CountUniqAggregator(config: JsObject) extends Aggregator {
+class CountUniqAggregator(config: JsObject) extends FoldAggregator[Set[String]] {
   val cfg = config.as[Config]
   
   val resultKey = "[UNIQUE_COUNT]"
   
   override def name = "SimpleCountUniqueAggregator"
-   
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
-    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)
-    rezF.map { valueVariants =>  
-      SliceResult(
-        slice,
-        results = Map(resultKey -> valueVariants.size)
-      )
-    }
-  }
     
-  protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
-    Iteratee.fold(Set.empty[String]) { (state, json: JsObject) => 
-      AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
-        rez + (v)      
-      }
-    }
-  )
+  
+  //Slice aggregation
+  protected def foldInitState = Set.empty
+  
+  protected def folder(state: Set[String], json: JsObject) = AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state)(_+_)
+  
+  protected def resultMapper(slice: Slice, valueVariants: Set[String]) = 
+    SliceResult(
+      slice,
+      results = Map(resultKey -> valueVariants.size)
+    )
+    
+   
 }

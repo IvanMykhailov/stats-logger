@@ -20,6 +20,8 @@ class AggregatorResolverImpl extends AggregatorResolver{
       val constructors = clazz.getConstructors()
       if (constructors.length != 1) {
         throw new IllegalArgumentException("Aggregator class should have exactly one constructor")
+      } else if (constructors(0).getParameterCount() != 1 || constructors(0).getParameterTypes()(0) != classOf[JsObject]) {
+        throw new IllegalArgumentException("Aggregator constructor should accept config:JsObject")
       } else {
         constructors(0).newInstance(config).asInstanceOf[Aggregator]  
       }

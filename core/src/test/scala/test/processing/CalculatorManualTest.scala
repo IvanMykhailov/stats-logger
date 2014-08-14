@@ -18,7 +18,7 @@ import play.api.libs.iteratee.Iteratee
 import play.api.libs.iteratee.Enumerator
 
 
-class CalculatorTest extends BaseDaoTest {
+class CalculatorManualTest extends BaseDaoTest {
 
   behavior of "Calculator"
   
@@ -30,10 +30,6 @@ class CalculatorTest extends BaseDaoTest {
   
   
   val defaultCalcInterval = {
-    //Test logs max and min dates
-    //ISODate("2012-01-10T21:59:59.790Z")
-    //ISODate("2012-01-09T22:00:00.027Z")
-    
     val startDate = new DateTime(2012, 1, 10, 2, 0, 0, 0, DateTimeZone.UTC);
     val endDate = new DateTime(2012, 1, 10, 19, 0, 0, 0, DateTimeZone.UTC);
     new Interval(startDate, endDate);

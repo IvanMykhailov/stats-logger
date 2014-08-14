@@ -16,7 +16,7 @@ import org.joda.time.DateTime
 import slogger.services.processing.CalculatorContext
 
 
-class CalculationPlainTest extends BaseCalculationTest {
+class PlainAggregatorsTest extends BaseCalculationTest {
 
   def extractionSpecs(fieldName: String, period: TimePeriod.Value = TimePeriod.Hour) = ExtractionSpecs(
     filter = None,

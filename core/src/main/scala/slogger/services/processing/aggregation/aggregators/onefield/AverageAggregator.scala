@@ -15,9 +15,10 @@ import slogger.model.processing.SliceResult
 import slogger.utils.IterateeUtils
 import play.api.libs.json.Json
 import play.api.libs.json.Format
+import slogger.services.processing.aggregation.aggregators.FoldAggregator
 
 
-class AverageAggregator(config: JsObject) extends Aggregator {
+class AverageAggregator(config: JsObject) extends FoldAggregator[AverageAggregator.TmpRez] {
   import AverageAggregator._
   
   val cfg = config.as[Config]
@@ -26,21 +27,12 @@ class AverageAggregator(config: JsObject) extends Aggregator {
   
   override def name = "SimpleSumAggregator"
    
-  override def aggregate(slice: Slice, dataEnumerator: Enumerator[JsObject])(implicit ec: ExecutionContext): Future[SliceResult] = {
-    val rezF = dataEnumerator |>>| iteratee map(IterateeUtils.unwrapErrortoException)
     
-    rezF.map { tmpRez =>
-      SliceResult(
-        slice,
-        results = Map(resultKey -> tmpRez.sum / tmpRez.count),
-        meta = Json.toJson(tmpRez)
-      )
-    }
-  }
-    
-  protected def iteratee(implicit ec: ExecutionContext) = IterateeUtils.wrapExceptionToError(
-    Iteratee.fold(TmpRez()) { (state: TmpRez, json: JsObject) => 
-      val values = AggregatorUtils.numberValues(json\(cfg.fieldName))
+  //Slice aggregation
+  protected def foldInitState = TmpRez()
+  
+  protected def folder(state: TmpRez, json: JsObject) = {
+    val values = AggregatorUtils.numberValues(json\(cfg.fieldName))
       if (values.isEmpty) {
         state
       } else {
@@ -48,11 +40,19 @@ class AverageAggregator(config: JsObject) extends Aggregator {
           count = state.count + values.length,
           sum = state.sum + values.reduce(_ + _)
         )
-      }
-    }
-  )
+      }    
+  }
+  
+  protected def resultMapper(slice: Slice, tmpRez: TmpRez) = 
+    SliceResult(
+      slice,
+      results = Map(resultKey -> tmpRez.sum / tmpRez.count),
+      meta = Json.toJson(tmpRez)
+    )
+    
   
   
+  //Total aggregation
   override def isSliceMergingSupported = true
   
   override def mergeSlices(slices: Seq[SliceResult]): Map[String, BigDecimal] = {

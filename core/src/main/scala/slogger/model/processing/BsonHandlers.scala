@@ -21,6 +21,7 @@ trait BsonHandlers extends slogger.model.common.BsonHandlers {
   
   implicit val StatsResultHandler = Macros.handler[StatsResult]
   
+  implicit val CalculationMetaStatsHandler = Macros.handler[CalculationMetaStats]
   
   implicit val CalculationResultHandler = {
     import slogger.model.specification.BsonHandlers.SpecsBundleHandler
