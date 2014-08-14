@@ -16,23 +16,26 @@ import play.api.libs.iteratee.Enumerator
 import slogger.model.processing.SliceResult
 import play.api.libs.json.JsObject
 import slogger.utils.IterateeUtils
+import slogger.services.processing.aggregation.aggregators.onefield.SumAggregator
+import slogger.services.processing.aggregation.aggregators.onefield.Config
+import com.github.nscala_time.time.Imports._
+import slogger.services.processing.aggregation.aggregators.onefield.AverageAggregator
 
 
 class CalculatorTest extends BaseCalculationTest {
   
+  val extraction = ExtractionSpecs(
+    filter = None,
+    projection = Some(Json.obj("characterLevel" -> 1)),
+    timeLimits = TimeLimits(referenceCalcInterval),
+    slicing = Some(SlicingSpecs(
+      sliceDuration = TimePeriod.duration(TimePeriod.Day),
+      snapTo = new DateTime(1493L)
+    )),
+    customCollectionName = Some("xlogs")
+  )
   
   "Calculator" should "handle erros" in {
-    val extraction = ExtractionSpecs(
-      filter = None,
-      projection = Some(Json.obj("level" -> 1)),
-      timeLimits = TimeLimits(referenceCalcInterval),
-      slicing = Some(SlicingSpecs(
-        sliceDuration = TimePeriod.duration(TimePeriod.Day),
-        snapTo = new DateTime(1493L)
-      )),
-      customCollectionName = Some("xlogs")
-    ) 
-    
     val specs = SpecsBundle(
       extraction,
       aggregation = AggregationSpecs(
@@ -45,6 +48,23 @@ class CalculatorTest extends BaseCalculationTest {
     
     rez should be ('isError)
     rez.statsError.get.message shouldBe ("ErrorShouldBeHandled")    
+  }
+  
+  
+  it should "provide statistic" in {
+    val specs = SpecsBundle(
+      extraction,
+      aggregation = AggregationSpecs(
+        aggregatorClass = classOf[AverageAggregator].getName(),
+        config = Json.toJson(Config("characterLevel")).as[JsObject]
+      ) 
+    ) 
+    
+    val rez = twait(calculator.calculate(specs))
+    
+    rez.metaStats.processingTime should be > new Duration(0)
+    rez.metaStats.reusedSlices shouldBe 0
+    rez.metaStats.processedDocuments shouldBe 35730
   }
 }
 

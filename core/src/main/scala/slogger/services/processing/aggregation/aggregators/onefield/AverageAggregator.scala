@@ -46,10 +46,11 @@ class AverageAggregator(config: JsObject) extends FoldAggregator[AverageAggregat
   protected def resultMapper(slice: Slice, tmpRez: TmpRez) = 
     SliceResult(
       slice,
-      results = Map(resultKey -> tmpRez.sum / tmpRez.count),
+      results = Map(resultKey -> safeDiv(tmpRez.sum, tmpRez.count)),
       meta = Json.toJson(tmpRez)
     )
     
+  def safeDiv(bd: BigDecimal, div: BigDecimal): BigDecimal = if (bd == 0) 0 else {bd / div}
   
   
   //Total aggregation
@@ -57,7 +58,7 @@ class AverageAggregator(config: JsObject) extends FoldAggregator[AverageAggregat
   
   override def mergeSlices(slices: Seq[SliceResult]): Map[String, BigDecimal] = {
     val tmpRez = slices.map(_.meta.as[TmpRez]).reduce(_ + _)
-    Map(resultKey -> tmpRez.sum / tmpRez.count)
+    Map(resultKey -> safeDiv(tmpRez.sum, tmpRez.count))
   } 
 }
 

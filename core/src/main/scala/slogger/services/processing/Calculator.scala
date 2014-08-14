@@ -88,16 +88,16 @@ class CalculatorImpl(
       val data = extractor.extract(specs.extraction, now)
       val aggregator: Aggregator = aggregatorResolver.resolve(specs.aggregation.aggregatorClass, specs.aggregation.config).get
       
-      //val reusedSlicesCounter = new AtomicLong
-      //val (documentCounter, docCounterEnumeratee) = counterEnumeratee
+      val reusedSlicesCounter = new AtomicLong
+      val (documentCounter, docCounterEnumeratee) = counterEnumeratee
       
       val aggregationFutures = data.map { case (slice, sliceDataEnumerator) =>
         reusableSlicesResults.get(slice) match {
           case Some(oldRez) => 
-            //reusedSlicesCounter.incrementAndGet()
+            reusedSlicesCounter.incrementAndGet()
             Future.successful(oldRez)
           case None =>
-            aggregator.aggregate(slice, (sliceDataEnumerator/* &> docCounterEnumeratee*/) >>> Enumerator.enumInput(Input.EOF))
+            aggregator.aggregate(slice, (sliceDataEnumerator &> docCounterEnumeratee) >>> Enumerator.enumInput(Input.EOF))
         }
       }
       
@@ -109,8 +109,8 @@ class CalculatorImpl(
         }
         
         val metaStats = IntMetaStats(
-          documents = 1,//documentCounter.get(), 
-          reusedSlices = 1//reusedSlicesCounter.get()
+          documents = documentCounter.get(), 
+          reusedSlices = reusedSlicesCounter.get()
         )
         
         val rez = StatsResult(
@@ -156,7 +156,7 @@ object CalculatorImpl {
   ) 
   protected def counterEnumeratee(implicit ec: ExecutionContext): (AtomicLong, Enumeratee[JsObject, JsObject]) = {
     val counter = new AtomicLong()
-    val enumeratee = Enumeratee.map[JsObject]({e => /*counter.incrementAndGet();*/ e})
+    val enumeratee = Enumeratee.map[JsObject]({e => counter.incrementAndGet(); e})
     (counter, enumeratee)
   } 
 }
