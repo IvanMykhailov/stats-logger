@@ -1,6 +1,6 @@
 package slogger.services.processing
 
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import slogger.model.processing.StatsResult
 import slogger.services.processing.extraction.DataExtractor
 import slogger.services.processing.aggregation.AggregatorResolver
@@ -32,7 +32,7 @@ import play.api.libs.json.JsObject
 
 
 trait Calculator {
-  def calculate(specs: SpecsBundle): Future[CalculationResult]
+  def calculate(specs: CalculationSpecs): Future[CalculationResult]
   
 }
 
@@ -48,14 +48,14 @@ class CalculatorImpl(
   implicit val implicitExecutionContext = executionContext
   
   
-  override def calculate(specs: SpecsBundle): Future[CalculationResult] = {
+  override def calculate(specs: CalculationSpecs): Future[CalculationResult] = {
     val startTime = DateTime.now
     
     val calcFuture = calculateInt(specs, startTime)
     
     calcFuture.map { rez =>
       CalculationResult(  
-        bundle = specs,
+        calculationSpecs = specs,
         calculatedAt = startTime,
         metaStats = CalculationMetaStats(
           processedDocuments = rez._1.documents,
@@ -67,7 +67,7 @@ class CalculatorImpl(
     }.recover {
       case aex: AggregationException =>
         CalculationResult(  
-        bundle = specs,
+        calculationSpecs = specs,
         calculatedAt = startTime,
         metaStats = CalculationMetaStats(
           processedDocuments = -1,
@@ -80,8 +80,8 @@ class CalculatorImpl(
   }
   
 
-  protected def calculateInt(specs: SpecsBundle, now: DateTime): Future[(IntMetaStats, StatsResult)] = {    
-    hystoryProvider.findByBundle(specs).flatMap { oldCalcOpt =>
+  protected def calculateInt(specs: CalculationSpecs, now: DateTime): Future[(IntMetaStats, StatsResult)] = {    
+    hystoryProvider.findBySpecs(specs).flatMap { oldCalcOpt =>
       val oldSlicesResults = oldCalcOpt.map(_.lines).getOrElse(Seq.empty)      
       val reusableSlicesResults = oldSlicesResults.filter(_.slice.complete).map(c => (c.slice, c)).toMap
     

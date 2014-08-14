@@ -6,7 +6,7 @@ import play.api.libs.json.Json
 import slogger.model.specification.extraction.TimeLimits
 import slogger.model.specification.extraction.SlicingSpecs
 import org.joda.time.DateTime
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import slogger.model.specification.aggregation.AggregationSpecs
 import slogger.services.processing.aggregation.Aggregator
 import scala.concurrent.ExecutionContext
@@ -36,7 +36,7 @@ class CalculatorTest extends BaseCalculationTest {
   )
   
   "Calculator" should "handle erros" in {
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction,
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[BrokenAggregator].getName(),
@@ -52,7 +52,7 @@ class CalculatorTest extends BaseCalculationTest {
   
   
   it should "provide statistic" in {
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction,
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[AverageAggregator].getName(),

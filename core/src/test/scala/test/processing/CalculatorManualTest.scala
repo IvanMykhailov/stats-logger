@@ -1,7 +1,7 @@
 package test.processing
 
 import slogger.services.processing.Calculator
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import com.github.nscala_time.time.Imports._
 import slogger.model.specification.extraction.ExtractionSpecs
 import slogger.model.specification.extraction.TimeLimits
@@ -40,7 +40,7 @@ class CalculatorManualTest extends BaseDaoTest {
        
     
     val calculator = Calculator.create(dbProvider)
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction = ExtractionSpecs(
         filter = None,
         projection = None,

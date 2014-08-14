@@ -22,15 +22,15 @@ trait BsonHandlers extends slogger.model.common.BsonHandlers {
   implicit val AggregationSpecsHandle = Macros.handler[AggregationSpecs]
   
   
-  implicit val SpecsBundleHandler = {
-    implicit val internalHandler = Macros.handler[SpecsBundle]
+  implicit val CalculationSpecsHandler = {
+    implicit val internalHandler = Macros.handler[CalculationSpecs]
     
-    new BSONHandler[BSONDocument, SpecsBundle] with BSONDocumentWriter[SpecsBundle] with BSONDocumentReader[SpecsBundle]{    
+    new BSONHandler[BSONDocument, CalculationSpecs] with BSONDocumentWriter[CalculationSpecs] with BSONDocumentReader[CalculationSpecs]{    
       def copyId(bson: BSONDocument): BSONDocument = {
         bson ++ BSONDocument("_id" -> bson.get("id").get)        
       }       
-      def read(bson: BSONDocument): SpecsBundle = internalHandler.read(bson)      
-      def write(e: SpecsBundle): BSONDocument = copyId(internalHandler.write(e))
+      def read(bson: BSONDocument): CalculationSpecs = internalHandler.read(bson)      
+      def write(e: CalculationSpecs): BSONDocument = copyId(internalHandler.write(e))
     }
   }
 }

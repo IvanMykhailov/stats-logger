@@ -3,7 +3,7 @@ package test.model
 import play.api.libs.json._
 import slogger.model.common.TimePeriod
 import slogger.model.processing.StatsResult
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import slogger.model.specification.extraction.ExtractionSpecs
 import slogger.model.specification.extraction.SlicingSpecs
 import slogger.model.specification.extraction.TimeLimits
@@ -27,7 +27,7 @@ class StatsResultDaoTest extends BaseDaoTest {
   val dao: CalculationResultDao = new CalculationResultDaoMongo(dbProvider)
 
   
-  def newSpecsBundle() = {
+  def newCalculationSpecs() = {
     val extraction = ExtractionSpecs(
       filter = None,
       projection = Some(Json.obj("testFiels" -> 1)),
@@ -42,20 +42,20 @@ class StatsResultDaoTest extends BaseDaoTest {
       config = Json.obj()
     )  
     
-    SpecsBundle(
+    CalculationSpecs(
       extraction,
       aggregation
     )
   }
   
   
-  def newCalcResult(specs: SpecsBundle) = {
+  def newCalcResult(specs: CalculationSpecs) = {
     val statsRez = StatsResult(
       lines = Seq.empty,
       total = None
     )    
     CalculationResult(
-      bundle = specs,
+      calculationSpecs = specs,
       calculatedAt = DateTime.now,
       metaStats = CalculationMetaStats(1, 1, new Duration(1)),
       statsResult = Some(statsRez)
@@ -73,62 +73,62 @@ class StatsResultDaoTest extends BaseDaoTest {
   
   
   "SlicingSpecs" should "be (de)serialized" in {
-    val s = newSpecsBundle().extraction.slicing.get    
+    val s = newCalculationSpecs().extraction.slicing.get    
     val bson = BsonHandlers.SlicingSpecsHandler.write(s)
     val loaded = BsonHandlers.SlicingSpecsHandler.read(bson)    
     loaded should be (s)   
   }
   
   
-  "SpecsBundle" should "be (de)serialized" in {
-    val b = newSpecsBundle()    
-    val bson = BsonHandlers.SpecsBundleHandler.write(b)    
-    val loaded = BsonHandlers.SpecsBundleHandler.read(bson)    
+  "CalculationSpecs" should "be (de)serialized" in {
+    val b = newCalculationSpecs()    
+    val bson = BsonHandlers.CalculationSpecsHandler.write(b)    
+    val loaded = BsonHandlers.CalculationSpecsHandler.read(bson)    
     loaded should be (b)    
   }
   
   
   "CalculationResultDao" should "save stats" in {
-    val f = dao.save(newCalcResult(newSpecsBundle()))
+    val f = dao.save(newCalcResult(newCalculationSpecs()))
     twait(f)
   }
   
   
-  it should "load saved stats by bundle" in {
-    val bundle = newSpecsBundle()
-    val calcRez = newCalcResult(bundle)
+  it should "load saved stats by CalculationSpecs" in {
+    val calcSpecs = newCalculationSpecs()
+    val calcRez = newCalcResult(calcSpecs)
     twait(dao.save(calcRez))    
-    val loaded = twait(dao.findByBundle(bundle))    
+    val loaded = twait(dao.findBySpecs(calcSpecs))    
     loaded.get should be (calcRez)
   }
   
   
-  it should "not load stats if bundle is changed, even if id is same" in {
-    val bundle = newSpecsBundle()
-    val calcRez = newCalcResult(bundle)
+  it should "not load stats if CalculationSpecs is changed, even if id is same" in {
+    val calcSpecs = newCalculationSpecs()
+    val calcRez = newCalcResult(calcSpecs)
     
-    val dbundle = bundle.copy(
-      extraction = bundle.extraction.copy(
+    val dcalcSpecs = calcSpecs.copy(
+      extraction = calcSpecs.extraction.copy(
         customCollectionName = Some("test2")
       )    
     )    
     twait(dao.save(calcRez))    
-    val loaded = twait(dao.findByBundle(dbundle))    
+    val loaded = twait(dao.findBySpecs(dcalcSpecs))    
     loaded should be (None)
   }
   
   
-  it should "load saved stats by bundle even if time period is different" in {    
-    val bundle = newSpecsBundle()
-    val calcRez = newCalcResult(bundle)
+  it should "load saved stats by CalculationSpecs even if time period is different" in {    
+    val calcSpecs = newCalculationSpecs()
+    val calcRez = newCalcResult(calcSpecs)
     
-    val dbundle = bundle.copy(
-      extraction = bundle.extraction.copy(
+    val dcalcSpecs = calcSpecs.copy(
+      extraction = calcSpecs.extraction.copy(
         timeLimits = TimeLimits(new Interval(DateTime.now, DateTime.now))
       )    
     )    
     twait(dao.save(calcRez))    
-    val loaded = twait(dao.findByBundle(dbundle))    
+    val loaded = twait(dao.findBySpecs(dcalcSpecs))    
     loaded.get should be (calcRez)    
   }
 }

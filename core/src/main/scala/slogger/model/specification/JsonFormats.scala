@@ -7,7 +7,7 @@ trait JsonFormats
   extends slogger.model.specification.aggregation.JsonFormats
   with slogger.model.specification.extraction.JsonFormats
 {
-  implicit val SpecsBundleFormat = Json.format[SpecsBundle]
+  implicit val CalculationSpecsFormat = Json.format[CalculationSpecs]
 }
 
 

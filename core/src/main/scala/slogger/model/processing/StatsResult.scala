@@ -1,7 +1,7 @@
 package slogger.model.processing
 
 import java.util.UUID
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import org.joda.time.DateTime
 
 

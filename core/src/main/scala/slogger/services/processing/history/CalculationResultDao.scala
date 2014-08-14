@@ -1,7 +1,7 @@
 package slogger.services.processing.history
 
 import slogger.services.processing.extraction.DbProvider
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import scala.concurrent.Future
 import reactivemongo.api.collections.default.BSONCollection
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,9 +13,9 @@ import slogger.model.processing.CalculationResult
 
 trait CalculationResultDao {
   
-  def findByBundle(specs: SpecsBundle): Future[Option[CalculationResult]] = {
+  def findBySpecs(specs: CalculationSpecs): Future[Option[CalculationResult]] = {
     findById(specs.id).map { _.flatMap { rec =>
-      if (rec.bundle.equalsIgnoreTime(specs)) { 
+      if (rec.calculationSpecs.equalsIgnoreTime(specs)) { 
         Some(rec)
       } else {
         None

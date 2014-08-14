@@ -24,12 +24,12 @@ trait BsonHandlers extends slogger.model.common.BsonHandlers {
   implicit val CalculationMetaStatsHandler = Macros.handler[CalculationMetaStats]
   
   implicit val CalculationResultHandler = {
-    import slogger.model.specification.BsonHandlers.SpecsBundleHandler
+    import slogger.model.specification.BsonHandlers.CalculationSpecsHandler
     implicit val internalHandler = Macros.handler[CalculationResult]
     
     new BSONHandler[BSONDocument, CalculationResult] with BSONDocumentWriter[CalculationResult] with BSONDocumentReader[CalculationResult]{
       def read(bson: BSONDocument): CalculationResult = internalHandler.read(bson)      
-      def write(e: CalculationResult): BSONDocument = internalHandler.write(e) ++ BSONDocument("_id" -> e.bundle.id) 
+      def write(e: CalculationResult): BSONDocument = internalHandler.write(e) ++ BSONDocument("_id" -> e.calculationSpecs.id) 
     }
   }
 }

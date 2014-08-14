@@ -7,7 +7,7 @@ import slogger.model.specification.extraction.TimeLimits
 import slogger.model.specification.extraction.SlicingSpecs
 import org.joda.time.DateTime
 import slogger.services.processing.CalculatorContext
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import slogger.model.specification.aggregation.AggregationSpecs
 import slogger.services.processing.aggregation.aggregators.onefield.SumAggregator
 import slogger.services.processing.aggregation.aggregators.onefield
@@ -20,9 +20,9 @@ import slogger.services.processing.history.StatsResultProviderStub
 class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
 
   
-  def calculator(bundle: SpecsBundle, statsResult: StatsResult) = {   
+  def calculator(specs: CalculationSpecs, statsResult: StatsResult) = {   
     val context = new CalculatorContext(dbProvider) {
-      override lazy val statsResultProvider: StatsResultProvider = new StatsResultProviderStub(bundle, statsResult)
+      override lazy val statsResultProvider: StatsResultProvider = new StatsResultProviderStub(specs, statsResult)
     }
     context.calculator
   }
@@ -44,7 +44,7 @@ class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
   
   
   it should "reuse old calculation" in {
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),

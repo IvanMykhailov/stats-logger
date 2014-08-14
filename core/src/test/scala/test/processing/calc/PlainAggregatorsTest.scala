@@ -1,6 +1,6 @@
 package test.processing.calc
 
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import slogger.model.specification.extraction.ExtractionSpecs
 import slogger.model.specification.extraction.TimeLimits
 import slogger.model.specification.extraction.SlicingSpecs
@@ -34,7 +34,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
   
   it should "calculate counts" in {
     
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction = extractionSpecs("level"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[CountAggregator].getName(),
@@ -48,7 +48,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
   
   
   it should "calculate sum" in {
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),
@@ -62,7 +62,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
   
   
   it should "calculate average" in {
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[AverageAggregator].getName(),
@@ -83,7 +83,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
         config = Json.toJson(onefield.Config("characterLevel")).as[JsObject]
       )
     
-      val specs = SpecsBundle(
+      val specs = CalculationSpecs(
         extractionSpecs("characterLevel", timePeriod),
         aggregation 
       )
@@ -94,7 +94,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
   
     
   it should "calculate unique" in {
-    val specs = SpecsBundle(
+    val specs = CalculationSpecs(
       extraction = extractionSpecs("level", TimePeriod.Month),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[CountUniqAggregator].getName(),

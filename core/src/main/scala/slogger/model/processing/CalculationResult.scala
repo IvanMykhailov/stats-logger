@@ -1,12 +1,12 @@
 package slogger.model.processing
 
 import org.joda.time.DateTime
-import slogger.model.specification.SpecsBundle
+import slogger.model.specification.CalculationSpecs
 import org.joda.time.Duration
 
 
 case class CalculationResult(  
-  bundle: SpecsBundle,
+  calculationSpecs: CalculationSpecs,
   calculatedAt: DateTime,
   metaStats: CalculationMetaStats,
   
