@@ -28,7 +28,7 @@ class CountUniqAggregator(config: JsObject) extends FoldAggregator[Set[String]] 
   //Slice aggregation
   protected def foldInitState = Set.empty
   
-  protected def folder(state: Set[String], json: JsObject) = AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state)(_+_)
+  protected def folder(state: Set[String], json: JsObject) = AggregatorUtils.stringValues(cfg.extractField(json)).foldLeft(state)(_+_)
   
   protected def resultMapper(slice: Slice, valueVariants: Set[String]) = 
     SliceResult(

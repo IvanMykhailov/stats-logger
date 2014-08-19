@@ -33,7 +33,7 @@ class CountAggregator(config: JsObject) extends FoldAggregator[Map[String, BigDe
   protected def foldInitState = Map.empty
   
   protected def folder(state: Map[String, BigDecimal], json: JsObject) = 
-    AggregatorUtils.stringValues(json\(cfg.fieldName)).foldLeft(state) { (rez, v) => 
+    AggregatorUtils.stringValues(cfg.extractField(json)).foldLeft(state) { (rez, v) => 
       val count = rez.getOrElse(v, BigDecimal(0)) + 1
       rez + (v -> count)
     }

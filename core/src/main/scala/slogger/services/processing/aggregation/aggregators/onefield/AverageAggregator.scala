@@ -32,7 +32,7 @@ class AverageAggregator(config: JsObject) extends FoldAggregator[AverageAggregat
   protected def foldInitState = TmpRez()
   
   protected def folder(state: TmpRez, json: JsObject) = {
-    val values = AggregatorUtils.numberValues(json\(cfg.fieldName))
+    val values = AggregatorUtils.numberValues(cfg.extractField(json))
       if (values.isEmpty) {
         state
       } else {

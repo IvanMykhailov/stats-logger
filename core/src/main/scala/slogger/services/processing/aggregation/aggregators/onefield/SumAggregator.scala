@@ -27,7 +27,7 @@ class SumAggregator(config: JsObject) extends FoldAggregator[BigDecimal] {
   //Slice aggregation
   protected def foldInitState = BigDecimal(0)
   
-  protected def folder(state: BigDecimal, json: JsObject) = AggregatorUtils.numberValues(json\(cfg.fieldName)).fold(state)(_ + _)
+  protected def folder(state: BigDecimal, json: JsObject) = AggregatorUtils.numberValues(cfg.extractField(json)).fold(state)(_ + _)
   
   protected def resultMapper(slice: Slice, sum: BigDecimal) = 
     SliceResult(
