@@ -20,7 +20,7 @@ abstract class BaseDaoTest extends FlatSpec with Matchers with PropertyChecks {
   
   init()  
   
-  def init(): Unit = {
+  def init(): Unit = BaseDaoTest.synchronized {
     println("Start data initilizing ...")
     val collection: JSONCollection = dbProvider.db.collection("xlogs")
     val text = io.Source.fromInputStream(getClass.getResourceAsStream("/testLogs.json"))
@@ -47,4 +47,9 @@ abstract class BaseDaoTest extends FlatSpec with Matchers with PropertyChecks {
   } 
   
   def twait[T](awaitable: Awaitable[T]): T = Await.result(awaitable, Duration(5, "minutes"))
+}
+
+
+object BaseDaoTest {
+  
 }

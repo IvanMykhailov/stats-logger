@@ -16,6 +16,7 @@ import slogger.services.processing.extraction.DataExtractorImpl
 import slogger.services.processing.extraction.DataExtractorDaoMongo
 import play.api.libs.iteratee.Iteratee
 import play.api.libs.iteratee.Enumerator
+import slogger.services.processing.CalculatorContext
 
 
 class CalculatorManualTest extends BaseDaoTest {
@@ -37,9 +38,7 @@ class CalculatorManualTest extends BaseDaoTest {
   
   
   ignore should "calculate" in {
-       
-    
-    val calculator = Calculator.create(dbProvider)
+    val calculator = new CalculatorContext(dbProvider).calculator
     val specs = CalculationSpecs(
       extraction = ExtractionSpecs(
         filter = None,

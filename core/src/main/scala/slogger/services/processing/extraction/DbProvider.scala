@@ -15,6 +15,13 @@ trait DbProvider {
 }
 
 
+class DirectDbProvider(
+  val driver: MongoDriver,
+  val connection: MongoConnection,
+  val db: DB
+) extends DbProvider
+
+
 class DirectMongoDbProvider(dbName: String, hosts: Seq[String]) extends DbProvider {
   import reactivemongo.api._
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,6 +30,5 @@ class DirectMongoDbProvider(dbName: String, hosts: Seq[String]) extends DbProvid
   
   val connection: MongoConnection = driver.connection(hosts)
   
-  val db: DB = connection(dbName)
-  
+  val db: DB = connection(dbName)  
 }

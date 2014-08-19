@@ -47,7 +47,7 @@ class AverageAggregator(config: JsObject) extends FoldAggregator[AverageAggregat
     SliceResult(
       slice,
       results = Map(resultKey -> safeDiv(tmpRez.sum, tmpRez.count)),
-      meta = Json.toJson(tmpRez)
+      meta = Json.toJson(tmpRez).as[JsObject]
     )
     
   def safeDiv(bd: BigDecimal, div: BigDecimal): BigDecimal = if (bd == 0) 0 else {bd / div}

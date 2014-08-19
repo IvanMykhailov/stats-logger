@@ -29,11 +29,12 @@ import slogger.model.processing.CalculationMetaStats
 import java.util.concurrent.atomic.AtomicLong
 import play.api.libs.iteratee.Enumeratee
 import play.api.libs.json.JsObject
+import org.slf4j.LoggerFactory
+import scala.util.control.NonFatal
 
 
 trait Calculator {
-  def calculate(specs: CalculationSpecs): Future[CalculationResult]
-  
+  def calculate(specs: CalculationSpecs): Future[CalculationResult]  
 }
 
 
@@ -45,43 +46,51 @@ class CalculatorImpl(
 ) extends Calculator {
   import CalculatorImpl._
   
+  val log = LoggerFactory.getLogger("sloger")
+  
   implicit val implicitExecutionContext = executionContext
   
   
   override def calculate(specs: CalculationSpecs): Future[CalculationResult] = {
     val startTime = DateTime.now
+    log.debug(s"Calc[id=${specs.id}]: start calculation")
     
     val calcFuture = calculateInt(specs, startTime)
     
     calcFuture.map { rez =>
+      val calculationTime = new Duration(startTime, DateTime.now)
+      log.debug(s"Calc[id=${specs.id}]: calculation took $calculationTime time")
       CalculationResult(  
         calculationSpecs = specs,
         calculatedAt = startTime,
         metaStats = CalculationMetaStats(
           processedDocuments = rez._1.documents,
           reusedSlices = rez._1.reusedSlices,
-          processingTime = new Duration(startTime, DateTime.now)
+          processingTime = calculationTime
         ),
         statsResult = Some(rez._2)
       )    
     }.recover {
       case aex: AggregationException =>
+        log.error(s"Calc[id=${specs.id}]: error, ${aex}")
         CalculationResult(  
-        calculationSpecs = specs,
-        calculatedAt = startTime,
-        metaStats = CalculationMetaStats(
-          processedDocuments = -1,
-          reusedSlices = -1,
-          processingTime = new Duration(startTime, DateTime.now)
-        ),
-        statsError = Some(StatsError(aex.getMessage, aex.errorDocument))
-      )
+          calculationSpecs = specs,
+          calculatedAt = startTime,
+          metaStats = CalculationMetaStats(
+            processedDocuments = -1,
+            reusedSlices = -1,
+            processingTime = new Duration(startTime, DateTime.now)
+          ),
+          statsError = Some(StatsError(aex.getMessage, aex.errorDocument))
+        )
     }
   }
   
 
   protected def calculateInt(specs: CalculationSpecs, now: DateTime): Future[(IntMetaStats, StatsResult)] = {    
-    hystoryProvider.findBySpecs(specs).flatMap { oldCalcOpt =>
+    hystoryProvider.findBySpecs(specs).flatMap { oldCalcOpt => 
+      log.debug(s"Calc[id=${specs.id}]: reuse old calculation - ${oldCalcOpt.isDefined}")
+      
       val oldSlicesResults = oldCalcOpt.map(_.lines).getOrElse(Seq.empty)      
       val reusableSlicesResults = oldSlicesResults.filter(_.slice.complete).map(c => (c.slice, c)).toMap
     
@@ -113,6 +122,10 @@ class CalculatorImpl(
           reusedSlices = reusedSlicesCounter.get()
         )
         
+        log.debug(s"Calc[id=${specs.id}]: ${slicesResults.length} slices")
+        log.debug(s"Calc[id=${specs.id}]: ${metaStats.reusedSlices} slices reused")
+        log.debug(s"Calc[id=${specs.id}]: ${metaStats.documents} documents processed")
+        
         val rez = StatsResult(
           lines = slicesResults,
           total = total
@@ -123,6 +136,21 @@ class CalculatorImpl(
     }
   }
   
+}
+
+
+class HistorySavingCalculator(
+  baseCalculator: Calculator,
+  calculationResultDao: CalculationResultDao
+) extends Calculator {
+  
+  val log =  LoggerFactory.getLogger("Calculator")
+  
+  override def calculate(specs: CalculationSpecs): Future[CalculationResult] = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    baseCalculator.calculate(specs) 
+      .flatMap(rez => calculationResultDao.save(rez).map(any => rez))
+  }  
 }
 
 
@@ -138,14 +166,7 @@ class CalculatorContext(dbProvider: DbProvider) {
     statsResultProvider,
     scala.concurrent.ExecutionContext.global
   ) 
-}
-
-
-object Calculator {
-  def create(dbProvider: DbProvider): Calculator = {
-    val context = new CalculatorContext(dbProvider)
-    context.calculator
-  }   
+  lazy val calculatorWithSaver = new HistorySavingCalculator(calculator, calculationResultDao)
 }
 
 

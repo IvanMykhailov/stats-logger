@@ -2,11 +2,12 @@ package test.processing.calc
 
 import test.processing.BaseDaoTest
 import slogger.services.processing.Calculator
+import slogger.services.processing.CalculatorContext
 
 
 class BaseCalculationTest extends BaseDaoTest with ReferenceResults {
 
-  val calculator = Calculator.create(dbProvider)
+  val calculator = new CalculatorContext(dbProvider).calculator
   
   def check(reference: Map[String, Double])(rez: Map[String, BigDecimal]): Unit = {
     reference.keySet shouldBe rez.keySet
