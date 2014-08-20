@@ -13,6 +13,11 @@ import play.modules.reactivemongo.json.ImplicitBSONHandlers._
 
 trait BsonHandlers {
   
+  def enumHandler[E <: Enumeration](enum: E): BSONHandler[BSONString, E#Value] = new BSONHandler[BSONString, E#Value] {
+    def read(bson: BSONString): E#Value = enum.withName(bson.value)
+    def write(v: E#Value): BSONString = BSONString(v.toString)
+  }
+  
   implicit def MapHandler[T](implicit valueHandler: BSONHandler[_ <: BSONValue, T]): BSONHandler[BSONDocument, Map[String, T]] =
     new BSONHandler[BSONDocument, Map[String, T]] {
       def read(doc: BSONDocument): Map[String, T] = {
@@ -23,7 +28,7 @@ trait BsonHandlers {
         }.flatten.toMap
       }
       def write(doc: Map[String, T]): BSONDocument = {
-        BSONDocument(doc.toTraversable map (t => (t._1, valueHandler.write(t._2))))
+        BSONDocument(doc.toTraversable map (t => (t._1.replace(".", "_"), valueHandler.write(t._2))))
       }
     }
   

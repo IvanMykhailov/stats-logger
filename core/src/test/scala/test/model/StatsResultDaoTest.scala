@@ -30,7 +30,7 @@ class StatsResultDaoTest extends BaseDaoTest {
   def newCalculationSpecs() = {
     val extraction = ExtractionSpecs(
       filter = None,
-      projection = Some(Json.obj("testFiels" -> 1)),
+      projection = Some(Json.obj("testFields" -> 1)),
       timeLimits = TimeLimits(TimePeriod.Hour),
       slicing = Some(SlicingSpecs(
         sliceDuration = TimePeriod.duration(TimePeriod.Minute)

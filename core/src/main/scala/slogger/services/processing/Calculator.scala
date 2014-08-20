@@ -142,14 +142,19 @@ class CalculatorImpl(
 class HistorySavingCalculator(
   baseCalculator: Calculator,
   calculationResultDao: CalculationResultDao
-) extends Calculator {
-  
-  val log =  LoggerFactory.getLogger("Calculator")
+) extends Calculator {  
+  val log = LoggerFactory.getLogger("sloger")
   
   override def calculate(specs: CalculationSpecs): Future[CalculationResult] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     baseCalculator.calculate(specs) 
-      .flatMap(rez => calculationResultDao.save(rez).map(any => rez))
+      .flatMap { rez => 
+        log.debug(s"Calc[id=${specs.id}]: saving result")
+        val f = calculationResultDao.save(rez).map(any => rez)
+        f.onSuccess { case rez => log.debug(s"Calc[id=${specs.id}]: result saved")}
+        f.onFailure { case NonFatal(ex) => log.error(s"Calc[id=${specs.id}]: saving error, $ex") }
+        f
+       }
   }  
 }
 
