@@ -15,6 +15,7 @@ import slogger.model.processing.StatsResult
 import slogger.model.processing.SliceResult
 import slogger.services.processing.history.StatsResultProvider
 import slogger.services.processing.history.StatsResultProviderStub
+import java.util.UUID
 
 
 class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
@@ -45,6 +46,7 @@ class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
   
   it should "reuse old calculation" in {
     val specs = CalculationSpecs(
+      id = UUID.randomUUID().toString(),
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),

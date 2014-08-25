@@ -25,7 +25,7 @@ trait CalculationResultDao {
 
   def save(statsResult: CalculationResult): Future[Unit]
   
-  def findById(id: UUID): Future[Option[CalculationResult]]
+  def findById(id: String): Future[Option[CalculationResult]]
 }
 
 
@@ -37,6 +37,6 @@ class CalculationResultDaoMongo(dbProvider: DbProvider) extends CalculationResul
   
   def findOne(query: BSONDocument): Future[Option[CalculationResult]] = collection.find(query).cursor[CalculationResult].headOption
   
-  override def findById(entityId: UUID): Future[Option[CalculationResult]] = findOne(BSONDocument("_id" -> entityId))
+  override def findById(entityId: String): Future[Option[CalculationResult]] = findOne(BSONDocument("_id" -> entityId))
   
 }

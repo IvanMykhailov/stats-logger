@@ -16,6 +16,7 @@ import slogger.model.processing.BsonHandlers.StatsResultHandler
 import slogger.model.processing.BsonHandlers.SliceResultHandler
 import slogger.model.processing.StatsResult
 import reactivemongo.bson.BSONDocument
+import java.util.UUID
 
 
 class CalculationResultSavingTest extends BaseCalculationTest {
@@ -56,6 +57,7 @@ class CalculationResultSavingTest extends BaseCalculationTest {
   
   "Calculator" should "calculate sum and save it" in {
     val specs = CalculationSpecs(
+      id = UUID.randomUUID().toString(),
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),

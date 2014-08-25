@@ -14,6 +14,7 @@ import slogger.services.processing.aggregation.aggregators.onefield.AverageAggre
 import slogger.services.processing.aggregation.aggregators.onefield.CountUniqAggregator
 import org.joda.time.DateTime
 import slogger.services.processing.CalculatorContext
+import java.util.UUID
 
 
 class PlainAggregatorsTest extends BaseCalculationTest {
@@ -35,6 +36,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
   it should "calculate counts" in {
     
     val specs = CalculationSpecs(
+      id = UUID.randomUUID().toString(),
       extraction = extractionSpecs("level"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[CountAggregator].getName(),
@@ -49,6 +51,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
   
   it should "calculate sum" in {
     val specs = CalculationSpecs(
+      id = UUID.randomUUID().toString(),
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[SumAggregator].getName(),
@@ -63,6 +66,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
   
   it should "calculate average" in {
     val specs = CalculationSpecs(
+      id = UUID.randomUUID().toString(),
       extraction = extractionSpecs("characterLevel"),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[AverageAggregator].getName(),
@@ -85,7 +89,8 @@ class PlainAggregatorsTest extends BaseCalculationTest {
     
       val specs = CalculationSpecs(
         extractionSpecs("characterLevel", timePeriod),
-        aggregation 
+        aggregation,
+        id = UUID.randomUUID().toString()
       )
       val rez = twait(calculator.calculate(specs))
       rez.statsResult.get.total.get shouldBe (correctRez_AggregationSumTotal)
@@ -95,6 +100,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
     
   it should "calculate unique" in {
     val specs = CalculationSpecs(
+      id = UUID.randomUUID().toString(),
       extraction = extractionSpecs("level", TimePeriod.Month),
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[CountUniqAggregator].getName(),

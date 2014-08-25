@@ -17,6 +17,7 @@ import slogger.services.processing.extraction.DataExtractorDaoMongo
 import play.api.libs.iteratee.Iteratee
 import play.api.libs.iteratee.Enumerator
 import slogger.services.processing.CalculatorContext
+import java.util.UUID
 
 
 class CalculatorManualTest extends BaseDaoTest {
@@ -53,7 +54,8 @@ class CalculatorManualTest extends BaseDaoTest {
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[CountAggregator].getName(),
         config = Json.toJson(onefield.Config("level")).as[JsObject]
-      ) 
+      ),
+      id = UUID.randomUUID().toString()
     )
     
     val rez = twait(calculator.calculate(specs))

@@ -9,7 +9,7 @@ case class CalculationSpecs(
   extraction: ExtractionSpecs, 
   aggregation: AggregationSpecs, 
   
-  id: UUID =  UUID.randomUUID
+  id: String
 ) { 
   def equalsIgnoreTime(that: CalculationSpecs): Boolean =
     CalculationSpecs.this.extraction.copy(timeLimits = that.extraction.timeLimits) == that.extraction &&

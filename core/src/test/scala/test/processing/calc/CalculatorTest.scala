@@ -20,6 +20,7 @@ import slogger.services.processing.aggregation.aggregators.onefield.SumAggregato
 import slogger.services.processing.aggregation.aggregators.onefield.Config
 import com.github.nscala_time.time.Imports._
 import slogger.services.processing.aggregation.aggregators.onefield.AverageAggregator
+import java.util.UUID
 
 
 class CalculatorTest extends BaseCalculationTest {
@@ -37,7 +38,8 @@ class CalculatorTest extends BaseCalculationTest {
   
   "Calculator" should "handle erros" in {
     val specs = CalculationSpecs(
-      extraction,
+      id = UUID.randomUUID().toString(),
+      extraction = extraction,
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[BrokenAggregator].getName(),
         config = Json.obj()
@@ -53,7 +55,8 @@ class CalculatorTest extends BaseCalculationTest {
   
   it should "provide statistic" in {
     val specs = CalculationSpecs(
-      extraction,
+      id = UUID.randomUUID().toString(),
+      extraction = extraction,
       aggregation = AggregationSpecs(
         aggregatorClass = classOf[AverageAggregator].getName(),
         config = Json.toJson(Config("characterLevel")).as[JsObject]

@@ -20,6 +20,7 @@ import slogger.services.processing.history.CalculationResultDaoMongo
 import slogger.services.processing.history.CalculationResultDao
 import slogger.model.processing.CalculationResult
 import slogger.model.processing.CalculationMetaStats
+import java.util.UUID
 
 
 class StatsResultDaoTest extends BaseDaoTest {
@@ -44,7 +45,8 @@ class StatsResultDaoTest extends BaseDaoTest {
     
     CalculationSpecs(
       extraction,
-      aggregation
+      aggregation,
+      id = UUID.randomUUID().toString()
     )
   }
   
