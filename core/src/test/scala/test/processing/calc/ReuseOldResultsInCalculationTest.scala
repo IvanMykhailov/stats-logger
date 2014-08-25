@@ -32,7 +32,7 @@ class ReuseOldResultsInCalculationTest extends BaseCalculationTest {
   def extractionSpecs(fieldName: String, period: TimePeriod.Value = TimePeriod.Hour) = ExtractionSpecs(
     filter = None,
     projection = Some(Json.obj(fieldName -> 1)),
-    timeLimits = TimeLimits(referenceCalcInterval),
+    timeLimits = TimeLimits.specific(referenceCalcInterval),
     slicing = Some(SlicingSpecs(
       sliceDuration = TimePeriod.duration(period),
       snapTo = new DateTime(1493L)

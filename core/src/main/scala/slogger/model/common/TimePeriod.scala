@@ -1,6 +1,7 @@
 package slogger.model.common
 
 import com.github.nscala_time.time.Imports._
+import org.joda.time.DateTimeConstants
 
 object TimePeriod extends Enumeration {
   type TimePeriod = Value
@@ -13,11 +14,11 @@ object TimePeriod extends Enumeration {
   )
   
   def duration(p: TimePeriod): Duration = p match {
-    case Minute     => new Duration(           1L * 60 * 1000)
-    case TenMinutes => new Duration(          10L * 60 * 1000)
-    case Hour       => new Duration(      1L * 60 * 60 * 1000)
-    case Day        => new Duration(1L  * 24 * 60 * 60 * 1000)
-    case Week       => new Duration(7L  * 24 * 60 * 60 * 1000)
-    case Month      => new Duration(31L * 24 * 60 * 60 * 1000)    
+    case Minute     => new Duration(DateTimeConstants.MILLIS_PER_MINUTE)
+    case TenMinutes => new Duration(DateTimeConstants.MILLIS_PER_MINUTE * 10)
+    case Hour       => new Duration(DateTimeConstants.MILLIS_PER_HOUR)
+    case Day        => new Duration(DateTimeConstants.MILLIS_PER_DAY)
+    case Week       => new Duration(DateTimeConstants.MILLIS_PER_WEEK)
+    case Month      => new Duration(DateTimeConstants.MILLIS_PER_DAY.longValue * 30) 
   }
 }

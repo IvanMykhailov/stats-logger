@@ -31,7 +31,7 @@ trait CalculationResultDao {
 
 class CalculationResultDaoMongo(dbProvider: DbProvider) extends CalculationResultDao {
   
-  val collection: BSONCollection = dbProvider.db.collection("calculationResults")  
+  val collection: BSONCollection = dbProvider.db.collection("slogger_calculationResults")  
       
   override def save(calcRez: CalculationResult): Future[Unit] = collection.save(calcRez).map(foo => Unit)  
   

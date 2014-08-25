@@ -6,6 +6,7 @@ import play.api.libs.iteratee.Enumerator
 import play.modules.reactivemongo.json.collection.JSONCollection
 import Json.{obj, arr}
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.slf4j.LoggerFactory
 
 
 trait DataExtractorDao {  
@@ -16,6 +17,7 @@ trait DataExtractorDao {
 class DataExtractorDaoMongo(
   dbProvider: DbProvider    
 ) extends DataExtractorDao {
+  val log = LoggerFactory.getLogger("slogger")
   
   val defaultLogCollection: JSONCollection = dbProvider.db.collection("logs")
   
@@ -33,6 +35,8 @@ class DataExtractorDaoMongo(
       obj("$and" -> (dateFilters :+ filter.get))
     }
         
+    log.trace(s"Load slice data: times=$times, collection=${collection.name}, query=$query")
+    
     (projection match {
       case Some(p) => collection.find(query, p)
       case None => collection.find(query)

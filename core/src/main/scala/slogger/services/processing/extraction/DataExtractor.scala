@@ -18,7 +18,7 @@ trait DataExtractor {
 class DataExtractorImpl(
   dao: DataExtractorDao    
 ) extends DataExtractor {
-  val log = LoggerFactory.getLogger("sloger")
+  val log = LoggerFactory.getLogger("slogger")
   
   override def extract(specs: ExtractionSpecs, now: DateTime = DateTime.now): Seq[(Slice, Enumerator[JsObject])] = {
     val interval = specs.timeLimits.interval(now)

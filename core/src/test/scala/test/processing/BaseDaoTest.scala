@@ -16,7 +16,7 @@ import scala.concurrent.Awaitable
 
 abstract class BaseDaoTest extends FlatSpec with Matchers with PropertyChecks {
 
-  val dbProvider: DbProvider = new DirectMongoDbProvider(dbName = "sloger_test", hosts = Seq("localhost"))
+  val dbProvider: DbProvider = new DirectMongoDbProvider(dbName = "slogger_test", hosts = Seq("localhost"))
   
   init()  
   

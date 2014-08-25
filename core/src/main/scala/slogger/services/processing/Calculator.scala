@@ -46,7 +46,7 @@ class CalculatorImpl(
 ) extends Calculator {
   import CalculatorImpl._
   
-  val log = LoggerFactory.getLogger("sloger")
+  val log = LoggerFactory.getLogger("slogger")
   
   implicit val implicitExecutionContext = executionContext
   
@@ -143,7 +143,7 @@ class HistorySavingCalculator(
   baseCalculator: Calculator,
   calculationResultDao: CalculationResultDao
 ) extends Calculator {  
-  val log = LoggerFactory.getLogger("sloger")
+  val log = LoggerFactory.getLogger("slogger")
   
   override def calculate(specs: CalculationSpecs): Future[CalculationResult] = {
     import scala.concurrent.ExecutionContext.Implicits.global

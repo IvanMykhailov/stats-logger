@@ -1,6 +1,4 @@
-package model.entity.presentation
-
-import slogger.model.presentation.HighchartLineDiagramData
+package slogger.model.presentation
 
 
 case class Diagram(

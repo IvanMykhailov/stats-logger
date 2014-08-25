@@ -11,17 +11,18 @@ sealed trait TimeLimits {
 
 
 object TimeLimits {
-  def apply(interval: Interval) = StartEndTime(interval.start, interval.end)
-  def apply(timePeriod: TimePeriod.Value) = LastPeriod(timePeriod)
+  def specific(interval: Interval) = StartEndTime(interval.start, interval.end)
+  def forLast(timePeriod: TimePeriod.Value) = LastPeriod(TimePeriod.duration(timePeriod))
+  def forLast(duration: Duration) = LastPeriod(duration)
 }
 
 
 case class LastPeriod(
-  forLastPeriod: TimePeriod.Value  
+  forLast: Duration  
 ) extends TimeLimits {
   override def interval(now: DateTime = DateTime.now): Interval = 
     new Interval(
-      now.minus(TimePeriod.duration(forLastPeriod)),
+      now.minus(forLast),
       now
     )
 }

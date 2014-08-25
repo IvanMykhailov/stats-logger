@@ -9,6 +9,7 @@ import play.api.libs.json.Json
 import slogger.model.common.TimePeriod
 import slogger.model.specification.extraction.LastPeriod
 import com.github.nscala_time.time.Imports._
+import slogger.model.specification.extraction.TimeLimits
 
 
 class DataExtractorTest extends BaseDaoTest {
@@ -21,7 +22,7 @@ class DataExtractorTest extends BaseDaoTest {
     val specs = ExtractionSpecs(
       filter = None,
       projection = None,
-      timeLimits = LastPeriod(TimePeriod.Month),
+      timeLimits = TimeLimits.forLast(TimePeriod.Month),
       slicing = None
     )
     

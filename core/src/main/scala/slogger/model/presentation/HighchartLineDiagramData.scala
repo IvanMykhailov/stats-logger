@@ -21,8 +21,8 @@ case class HighchartLineDiagramData(
     val sliceMillis = sliceDuration.getMillis()
     val totalMillis = sliceDuration.getMillis() * xAxisLabels.length
     
-    val needTime = (sliceMillis < DateTimeConstants.MILLIS_PER_DAY)
-    val needDate = (totalMillis > DateTimeConstants.MILLIS_PER_DAY)
+    val needTime = (sliceMillis < DateTimeConstants.MILLIS_PER_DAY.longValue)
+    val needDate = (totalMillis > DateTimeConstants.MILLIS_PER_DAY.longValue + DateTimeConstants.MILLIS_PER_HOUR.longValue)
     
     val formatter = (needDate, needTime) match {
       case (true, true)   => dateTimeFormatter

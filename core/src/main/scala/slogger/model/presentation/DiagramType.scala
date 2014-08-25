@@ -1,4 +1,4 @@
-package model.entity.presentation
+package slogger.model.presentation
 
 object DiagramType extends Enumeration {
   val Line, Percent = Value

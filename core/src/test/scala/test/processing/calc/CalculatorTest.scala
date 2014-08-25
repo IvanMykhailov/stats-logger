@@ -28,7 +28,7 @@ class CalculatorTest extends BaseCalculationTest {
   val extraction = ExtractionSpecs(
     filter = None,
     projection = Some(Json.obj("characterLevel" -> 1)),
-    timeLimits = TimeLimits(referenceCalcInterval),
+    timeLimits = TimeLimits.specific(referenceCalcInterval),
     slicing = Some(SlicingSpecs(
       sliceDuration = TimePeriod.duration(TimePeriod.Day),
       snapTo = new DateTime(1493L)

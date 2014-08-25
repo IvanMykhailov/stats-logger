@@ -32,7 +32,7 @@ class StatsResultDaoTest extends BaseDaoTest {
     val extraction = ExtractionSpecs(
       filter = None,
       projection = Some(Json.obj("testFields" -> 1)),
-      timeLimits = TimeLimits(TimePeriod.Hour),
+      timeLimits = TimeLimits.forLast(TimePeriod.Hour),
       slicing = Some(SlicingSpecs(
         sliceDuration = TimePeriod.duration(TimePeriod.Minute)
       )),
@@ -126,7 +126,7 @@ class StatsResultDaoTest extends BaseDaoTest {
     
     val dcalcSpecs = calcSpecs.copy(
       extraction = calcSpecs.extraction.copy(
-        timeLimits = TimeLimits(new Interval(DateTime.now, DateTime.now))
+        timeLimits = TimeLimits.specific(new Interval(DateTime.now, DateTime.now))
       )    
     )    
     twait(dao.save(calcRez))    

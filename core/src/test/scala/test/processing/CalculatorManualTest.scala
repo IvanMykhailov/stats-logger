@@ -44,7 +44,7 @@ class CalculatorManualTest extends BaseDaoTest {
       extraction = ExtractionSpecs(
         filter = None,
         projection = None,
-        timeLimits = TimeLimits(defaultCalcInterval),
+        timeLimits = TimeLimits.specific(defaultCalcInterval),
         slicing = Some(SlicingSpecs(
           sliceDuration = TimePeriod.duration(TimePeriod.Hour),
           snapTo = defaultCalcInterval.end
