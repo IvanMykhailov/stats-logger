@@ -65,6 +65,7 @@ case class HighchartDiagramTotal(
   def seriesJson: JsValue = {
     val series = Json.obj(
       "name" -> "total",
+      "colorByPoint" -> true,
       "data" -> dataTuples.map(_._2)
     )    
     import HighchartLineDiagramData.HighchartSeriesFormat

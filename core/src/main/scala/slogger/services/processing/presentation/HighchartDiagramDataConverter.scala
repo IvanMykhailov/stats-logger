@@ -13,7 +13,7 @@ object HighchartDiagramDataConverter {
   val MaxDisplayedSeriesCount = 15
   
   
-  def convert(statsResult: StatsResult, sliceDuration: Duration): HighchartLineDiagramData = {
+  def convert(statsResult: StatsResult, sliceDuration: Duration, seriesNamesMapping: Map[String, String] = Map.empty): HighchartLineDiagramData = {
     val linesOrdered = statsResult.lines.sortBy(_.slice.end)
   
     val xAxisLabels = linesOrdered.map(_.slice.end)
@@ -27,7 +27,8 @@ object HighchartDiagramDataConverter {
         val value = sliceRez.results.get(name).getOrElse(BigDecimal(0))
         HighchartSeriesPoint(value)
       }
-      HighchartSeries(name, seriesData)
+      def rename(name: String) = seriesNamesMapping.get(name).getOrElse(name)
+      HighchartSeries(rename(name), seriesData)
     }
     
     val seriesToDisplay = if (series.length > MaxDisplayedSeriesCount) {
@@ -45,4 +46,5 @@ object HighchartDiagramDataConverter {
     
     HighchartLineDiagramData(xAxisLabels, seriesToDisplay, sliceDuration, total)
   }
+ 
 }
