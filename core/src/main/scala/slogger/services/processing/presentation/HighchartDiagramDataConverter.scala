@@ -5,6 +5,7 @@ import slogger.model.processing.StatsResult
 import com.github.nscala_time.time.Imports._
 import slogger.model.presentation.HighchartSeriesPoint
 import slogger.model.presentation.HighchartSeries
+import slogger.model.presentation.HighchartDiagramTotal
 
 
 object HighchartDiagramDataConverter {
@@ -40,6 +41,8 @@ object HighchartDiagramDataConverter {
       series
     }
     
-    HighchartLineDiagramData(xAxisLabels, seriesToDisplay, sliceDuration)
+    val total = statsResult.total.map(t => HighchartDiagramTotal(t))
+    
+    HighchartLineDiagramData(xAxisLabels, seriesToDisplay, sliceDuration, total)
   }
 }

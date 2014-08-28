@@ -10,7 +10,8 @@ import org.joda.time.DateTimeConstants
 case class HighchartLineDiagramData(
   xAxisLabels: Seq[DateTime], 
   series: Seq[HighchartSeries],
-  sliceDuration: Duration
+  sliceDuration: Duration,
+  total: Option[HighchartDiagramTotal]
 ) {
   val dateFormatter = DateTimeFormat.forPattern("MMM dd")
   val dateTimeFormatter = DateTimeFormat.forPattern("MMM dd, HH:mm")
@@ -54,12 +55,32 @@ case class HighchartSeriesPoint(
 )
 
 
+case class HighchartDiagramTotal(
+  data: Map[String, BigDecimal]
+) {
+  private val dataTuples = data.toSeq 
+  
+  def xAxisLabelsJson: JsValue = Json.toJson(dataTuples.map(_._1))
+  
+  def seriesJson: JsValue = {
+    val series = Json.obj(
+      "name" -> "total",
+      "data" -> dataTuples.map(_._2)
+    )    
+    import HighchartLineDiagramData.HighchartSeriesFormat
+    Json.toJson(Seq(series))
+  } 
+}
+
+
 object HighchartLineDiagramData {
   import slogger.model.common.JsonFormats._
   
   implicit val HighchartSeriesPointFormat: Format[HighchartSeriesPoint] = Json.format[HighchartSeriesPoint]
   
   implicit val HighchartSeriesFormat: Format[HighchartSeries] = Json.format[HighchartSeries]
+  
+  implicit val HighchartDiagramTotalFormat: Format[HighchartDiagramTotal] = Json.format[HighchartDiagramTotal]
   
   implicit val HighchartLineDiagramDataFormat: Format[HighchartLineDiagramData] = Json.format[HighchartLineDiagramData]
 }
