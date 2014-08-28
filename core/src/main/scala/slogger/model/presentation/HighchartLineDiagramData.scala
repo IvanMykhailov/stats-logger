@@ -45,8 +45,7 @@ case class HighchartLineDiagramData(
 
 case class HighchartSeries(
   name: String,
-  data: Seq[HighchartSeriesPoint],
-  yAxis: Int = 1
+  data: Seq[HighchartSeriesPoint]
 )
 
 
