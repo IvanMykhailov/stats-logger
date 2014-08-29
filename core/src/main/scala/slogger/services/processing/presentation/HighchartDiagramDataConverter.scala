@@ -6,6 +6,7 @@ import com.github.nscala_time.time.Imports._
 import slogger.model.presentation.HighchartSeriesPoint
 import slogger.model.presentation.HighchartSeries
 import slogger.model.presentation.HighchartDiagramTotal
+import slogger.model.presentation.HighchartDiagramTotalValue
 
 
 object HighchartDiagramDataConverter {
@@ -21,13 +22,14 @@ object HighchartDiagramDataConverter {
     val seriesNames = linesOrdered.foldLeft(Set.empty[String]) { case (set, sliceRez) =>
       set ++ sliceRez.results.keys.toSet 
     }
+    
+    def rename(name: String) = seriesNamesMapping.get(name).getOrElse(name)
         
     val series = seriesNames.toSeq.map { name => 
       val seriesData = linesOrdered.map { sliceRez =>
         val value = sliceRez.results.get(name).getOrElse(BigDecimal(0))
         HighchartSeriesPoint(value)
       }
-      def rename(name: String) = seriesNamesMapping.get(name).getOrElse(name)
       HighchartSeries(rename(name), seriesData)
     }
     
@@ -42,9 +44,13 @@ object HighchartDiagramDataConverter {
       series
     }
     
-    val total = statsResult.total.map(t => HighchartDiagramTotal(t))
+    val total = statsResult.total.map { totals =>
+      val values = totals.toSeq.map(v => HighchartDiagramTotalValue(rename(v._1), v._2))
+      
+      HighchartDiagramTotal(values.sortBy(_.name))
+    }
     
-    HighchartLineDiagramData(xAxisLabels, seriesToDisplay, sliceDuration, total)
+    HighchartLineDiagramData(xAxisLabels, seriesToDisplay.sortBy(_.name), sliceDuration, total)
   }
  
 }

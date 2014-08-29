@@ -35,6 +35,15 @@ trait JsonFormats {
       "duration" -> d.getMillis()
     )
   }
+  
+  
+  implicit def mapFormat[K,V](implicit fmtk: Format[K], fmtv: Format[V]): Format[collection.immutable.Map[K, V]] =
+    new Format[collection.immutable.Map[K, V]] {
+      def writes(o: collection.immutable.Map[K, V]): JsValue = 
+        JsObject(o.map { case (k, v) => (Json.toJson(k)(fmtk).asOpt[String].getOrElse(k.toString), Json.toJson(v)(fmtv)) }.toList)
+        
+      def reads(json: JsValue): JsResult[collection.immutable.Map[K, V]] = ???
+    }
  
 }
 

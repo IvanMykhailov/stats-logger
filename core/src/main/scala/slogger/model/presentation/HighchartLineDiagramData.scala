@@ -54,18 +54,22 @@ case class HighchartSeriesPoint(
 )
 
 
+case class HighchartDiagramTotalValue(
+  name: String,
+  value: BigDecimal
+)
+
 case class HighchartDiagramTotal(
-  data: Map[String, BigDecimal]
+  data: Seq[HighchartDiagramTotalValue]
 ) {
-  private val dataTuples = data.toSeq 
   
-  def xAxisLabelsJson: JsValue = Json.toJson(dataTuples.map(_._1))
+  def xAxisLabelsJson: JsValue = Json.toJson(data.map(_.name))
   
   def seriesJson: JsValue = {
     val series = Json.obj(
       "name" -> "total",
       "colorByPoint" -> true,
-      "data" -> dataTuples.map(_._2)
+      "data" -> data.map(_.value)
     )    
     import HighchartLineDiagramData.HighchartSeriesFormat
     Json.toJson(Seq(series))
@@ -79,6 +83,8 @@ object HighchartLineDiagramData {
   implicit val HighchartSeriesPointFormat: Format[HighchartSeriesPoint] = Json.format[HighchartSeriesPoint]
   
   implicit val HighchartSeriesFormat: Format[HighchartSeries] = Json.format[HighchartSeries]
+  
+  implicit val HighchartDiagramTotalValueFormat: Format[HighchartDiagramTotalValue] = Json.format[HighchartDiagramTotalValue]
   
   implicit val HighchartDiagramTotalFormat: Format[HighchartDiagramTotal] = Json.format[HighchartDiagramTotal]
   
