@@ -159,12 +159,12 @@ class HistorySavingCalculator(
 }
 
 
-class CalculatorContext(dbProvider: DbProvider) {
+class CalculatorContext(dbProvider: DbProvider, aggregatorsClassLoader: ClassLoader = classOf[CalculatorContext].getClassLoader()) {
   lazy val extractionDao: DataExtractorDao = new DataExtractorDaoMongo(dbProvider) 
   lazy val calculationResultDao: CalculationResultDao = new CalculationResultDaoMongo(dbProvider)
   lazy val statsResultProvider: StatsResultProvider = new StatsResultProviderByDao(calculationResultDao)
   lazy val extractor: DataExtractor = new DataExtractorImpl(extractionDao)
-  lazy val aggregatorResolver: AggregatorResolver = new AggregatorResolverImpl
+  lazy val aggregatorResolver: AggregatorResolver = new AggregatorResolverImpl(aggregatorsClassLoader)
   lazy val calculator: Calculator = new CalculatorImpl(
     extractor,
     aggregatorResolver,

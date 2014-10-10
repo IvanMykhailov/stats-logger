@@ -12,11 +12,13 @@ trait AggregatorResolver {
 }
 
 
-class AggregatorResolverImpl extends AggregatorResolver{
+class AggregatorResolverImpl(
+  aggregatorsClassLoader: ClassLoader     
+) extends AggregatorResolver{
   
   override def resolve(aggregatorClass: String, config: JsObject): Try[Aggregator] = {
     Try {
-      val clazz = Class.forName(aggregatorClass)
+      val clazz = aggregatorsClassLoader.loadClass(aggregatorClass)
       val constructors = clazz.getConstructors()
       if (constructors.length != 1) {
         throw new IllegalArgumentException("Aggregator class should have exactly one constructor")
@@ -25,9 +27,6 @@ class AggregatorResolverImpl extends AggregatorResolver{
       } else {
         constructors(0).newInstance(config).asInstanceOf[Aggregator]  
       }
-    } 
-    
-    
-    
+    }    
   }
 }

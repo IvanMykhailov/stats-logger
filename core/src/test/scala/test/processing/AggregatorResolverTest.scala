@@ -27,7 +27,7 @@ class AggregatorWithIncorrectConstructor(config: JsObject, foo: Int) extends Agg
 
 class AggregatorResolverTest extends FlatSpec with Matchers with PropertyChecks {
   
-  val resolver = new AggregatorResolverImpl
+  val resolver = new AggregatorResolverImpl(this.getClass().getClassLoader())
   
   "AggregatorResolver" should "resolve correctly" in {
     val config = Json.obj()

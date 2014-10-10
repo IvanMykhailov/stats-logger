@@ -54,7 +54,7 @@ class RecalculationServiceImpl(
             log.info("Start recalculation: " + specs.name)
             val f = calculator.calculate(specs.calculationSpecs)
             Await.ready(f, scala.concurrent.duration.Duration(30, "minutes"))
-            f.onFailure { case NonFatal(ex) => log.error(s"Calc[id=${specs.id}]: saving error, $ex")}
+            f.onFailure { case NonFatal(ex) => log.error(s"Calc[id=${specs.id}]: calculation error, $ex", ex)}
             log.info("Done recalculation: " + specs.name)
           } catch {
             case NonFatal(ex) => log.error(s"Calc[id=${specs.id}]: calculation error, $ex")
