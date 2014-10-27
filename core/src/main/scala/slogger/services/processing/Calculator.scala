@@ -38,10 +38,13 @@ trait Calculator {
 }
 
 
+/**
+ * Take CalculationSpecs and do calculation. Can reuse old calculation, if historyProvider return it
+ */
 class CalculatorImpl(
   extractor: DataExtractor,
   aggregatorResolver: AggregatorResolver,
-  hystoryProvider: StatsResultProvider,
+  historyProvider: StatsResultProvider,
   executionContext: ExecutionContext
 ) extends Calculator {
   import CalculatorImpl._
@@ -88,7 +91,7 @@ class CalculatorImpl(
   
 
   protected def calculateInt(specs: CalculationSpecs, now: DateTime): Future[(IntMetaStats, StatsResult)] = {    
-    hystoryProvider.findBySpecs(specs).flatMap { oldCalcOpt => 
+    historyProvider.findBySpecs(specs).flatMap { oldCalcOpt => 
       log.debug(s"Calc[id=${specs.id}]: reuse old calculation - ${oldCalcOpt.isDefined}")
       
       val oldSlicesResults = oldCalcOpt.map(_.lines).getOrElse(Seq.empty)      
@@ -139,6 +142,9 @@ class CalculatorImpl(
 }
 
 
+/**
+ * Calculate and save result to database
+ */
 class HistorySavingCalculator(
   baseCalculator: Calculator,
   calculationResultDao: CalculationResultDao
@@ -159,6 +165,9 @@ class HistorySavingCalculator(
 }
 
 
+/**
+ * Context with already initialized default components. Allow you to avoid manual configuration.
+ */
 class CalculatorContext(dbProvider: DbProvider, aggregatorsClassLoader: ClassLoader = classOf[CalculatorContext].getClassLoader()) {
   lazy val extractionDao: DataExtractorDao = new DataExtractorDaoMongo(dbProvider) 
   lazy val calculationResultDao: CalculationResultDao = new CalculationResultDaoMongo(dbProvider)
