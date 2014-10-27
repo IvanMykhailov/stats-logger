@@ -25,7 +25,7 @@ class AverageAggregator(config: JsObject) extends FoldAggregator[AverageAggregat
   
   val resultKey = "[AVERAGE]"
   
-  override def name = "SimpleSumAggregator"
+  override def name = "SimpleAverageAggregator"
    
     
   //Slice aggregation
