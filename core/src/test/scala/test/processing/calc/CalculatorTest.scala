@@ -46,7 +46,7 @@ class CalculatorTest extends BaseCalculationTest {
       ) 
     )
     
-    val rez = twait(calculator.calculate(specs))
+    val rez = twait(calculator.calculate(specs, DateTime.now))
     
     rez should be ('isError)
     rez.statsError.get.message shouldBe ("ErrorShouldBeHandled")    
@@ -63,7 +63,7 @@ class CalculatorTest extends BaseCalculationTest {
       ) 
     ) 
     
-    val rez = twait(calculator.calculate(specs))
+    val rez = twait(calculator.calculate(specs, DateTime.now))
     
     rez.metaStats.processingTime should be > new Duration(0)
     rez.metaStats.reusedSlices shouldBe 0

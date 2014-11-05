@@ -65,7 +65,7 @@ class CalculationResultSavingTest extends BaseCalculationTest {
       )
     )
     
-    val rez = twait(calculatorWithSaver.calculate(specs))
+    val rez = twait(calculatorWithSaver.calculate(specs, DateTime.now))
     rez.statsResult.get.total.get shouldBe (correctRez_AggregationSumTotal)
     
     val savedRez = twait(rezDao.findById(specs.id))

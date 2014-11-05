@@ -58,7 +58,7 @@ class CalculatorManualTest extends BaseDaoTest {
       id = UUID.randomUUID().toString()
     )
     
-    val rez = twait(calculator.calculate(specs))
+    val rez = twait(calculator.calculate(specs, DateTime.now))
     println("============================\n" + rez.statsResult.get.total.get + "\n--------------")
     println(rez.statsResult.get.lines.size)
     

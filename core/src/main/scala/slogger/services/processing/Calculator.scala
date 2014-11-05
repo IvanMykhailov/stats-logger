@@ -34,7 +34,7 @@ import scala.util.control.NonFatal
 
 
 trait Calculator {
-  def calculate(specs: CalculationSpecs): Future[CalculationResult]  
+  def calculate(specs: CalculationSpecs, now: DateTime): Future[CalculationResult]  
 }
 
 
@@ -54,18 +54,18 @@ class CalculatorImpl(
   implicit val implicitExecutionContext = executionContext
   
   
-  override def calculate(specs: CalculationSpecs): Future[CalculationResult] = {
+  override def calculate(specs: CalculationSpecs, now: DateTime): Future[CalculationResult] = {
     val startTime = DateTime.now
     log.debug(s"Calc[id=${specs.id}]: start calculation")
     
-    val calcFuture = calculateInt(specs, startTime)
+    val calcFuture = calculateInt(specs, now)
     
     calcFuture.map { rez =>
       val calculationTime = new Duration(startTime, DateTime.now)
       log.debug(s"Calc[id=${specs.id}]: calculation took $calculationTime time")
       CalculationResult(  
         calculationSpecs = specs,
-        calculatedAt = startTime,
+        calculatedAt = now,
         metaStats = CalculationMetaStats(
           processedDocuments = rez._1.documents,
           reusedSlices = rez._1.reusedSlices,
@@ -78,7 +78,7 @@ class CalculatorImpl(
         log.error(s"Calc[id=${specs.id}]: error, ${aex}")
         CalculationResult(  
           calculationSpecs = specs,
-          calculatedAt = startTime,
+          calculatedAt = now,
           metaStats = CalculationMetaStats(
             processedDocuments = -1,
             reusedSlices = -1,
@@ -151,9 +151,9 @@ class HistorySavingCalculator(
 ) extends Calculator {  
   val log = LoggerFactory.getLogger("slogger")
   
-  override def calculate(specs: CalculationSpecs): Future[CalculationResult] = {
+  override def calculate(specs: CalculationSpecs, now: DateTime): Future[CalculationResult] = {
     import scala.concurrent.ExecutionContext.Implicits.global
-    baseCalculator.calculate(specs) 
+    baseCalculator.calculate(specs, now) 
       .flatMap { rez => 
         log.debug(s"Calc[id=${specs.id}]: saving result")
         val f = calculationResultDao.save(rez).map(any => rez)

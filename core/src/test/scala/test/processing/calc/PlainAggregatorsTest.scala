@@ -44,7 +44,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
       ) 
     )
     
-    val rez = twait(calculator.calculate(specs))
+    val rez = twait(calculator.calculate(specs, DateTime.now))
     rez.statsResult.get.total.get shouldBe (correctRez_AggregationCountTotal)
   }
   
@@ -59,7 +59,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
       )
     )
     
-    val rez = twait(calculator.calculate(specs))
+    val rez = twait(calculator.calculate(specs, DateTime.now))
     rez.statsResult.get.total.get shouldBe (correctRez_AggregationSumTotal)
   }
   
@@ -74,7 +74,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
       ) 
     )
     
-    val rez = twait(calculator.calculate(specs))
+    val rez = twait(calculator.calculate(specs, DateTime.now))
     check(correctRez_AggregationAverageTotal)(rez.statsResult.get.total.get)    
   }
   
@@ -92,7 +92,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
         aggregation,
         id = UUID.randomUUID().toString()
       )
-      val rez = twait(calculator.calculate(specs))
+      val rez = twait(calculator.calculate(specs, DateTime.now))
       rez.statsResult.get.total.get shouldBe (correctRez_AggregationSumTotal)
     }
   }
@@ -108,7 +108,7 @@ class PlainAggregatorsTest extends BaseCalculationTest {
       ) 
     )
     
-    val rez = twait(calculator.calculate(specs))    
+    val rez = twait(calculator.calculate(specs, DateTime.now))    
     rez.statsResult.get.lines(0).results shouldBe (correctRez_AggregationUniqueTotal)
   }
 }

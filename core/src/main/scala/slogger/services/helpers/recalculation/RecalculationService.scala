@@ -26,7 +26,7 @@ trait RecalculationService {
 class RecalculationServiceImpl(
   calcRezDao: CalculationResultDao,
   processingSpecsProvider: RecalculableSpecsDao,
-  calculator: Calculator
+  calculator: Calculator  
 ) extends RecalculationService {
   val log = LoggerFactory.getLogger("slogger")
   
@@ -52,7 +52,7 @@ class RecalculationServiceImpl(
           val specs = recalculationQueue.take()
           try {            
             log.info("Start recalculation: " + specs.name)
-            val f = calculator.calculate(specs.calculationSpecs)
+            val f = calculator.calculate(specs.calculationSpecs, calculateToDate())
             Await.ready(f, scala.concurrent.duration.Duration(30, TimeUnit.HOURS))
             f.onFailure { case NonFatal(ex) => log.error(s"Calc[id=${specs.id}]: calculation error, $ex", ex)}
             log.info("Done recalculation: " + specs.name)
@@ -75,8 +75,8 @@ class RecalculationServiceImpl(
   
   
   def recheck(): Unit = {
-    val now = DateTime.now.getMillis()
-    val specsToRecalcFuture = processingSpecsProvider.listAllRecalculableSpecs.map(_.filter(isRecalcRequired))
+    val calcRequired = isRecalcRequired(calculateToDate()) _
+    val specsToRecalcFuture = processingSpecsProvider.listAllRecalculableSpecs.map(_.filter(calcRequired))
     
     specsToRecalcFuture.map { specsToRecalc =>
       log.info("Need recalculation: " + specsToRecalc.map(_.name).mkString(", "))    
@@ -89,14 +89,17 @@ class RecalculationServiceImpl(
   }
   
   
-  def isRecalcRequired(specs: RecalculableSpecs): Boolean = {
+  def isRecalcRequired(now: DateTime)(specs: RecalculableSpecs): Boolean = {
     val calcRezOpt = Await.result(calcRezDao.findById(specs.id), timeout)    
     calcRezOpt match {
       case Some(calcRez) => 
-        val isOutdated = calcRez.calculatedAt < DateTime.now - specs.recalculationTime
+        val isOutdated = calcRez.calculatedAt < now - specs.recalculationTime
         val isSpecsChanged = (calcRez.calculationSpecs != specs.calculationSpecs)
         isOutdated || isSpecsChanged 
       case None => true 
     }
   }
+  
+  
+  def calculateToDate(): DateTime = DateTime.now
 }
