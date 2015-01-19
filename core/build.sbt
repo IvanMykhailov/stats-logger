@@ -4,8 +4,6 @@ organization := "me.singularex"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.5"
-
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
   "com.typesafe.play" %% "play-json" % "2.4.0-M2",
