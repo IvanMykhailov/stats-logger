@@ -29,6 +29,7 @@ abstract class BaseDaoTest extends FlatSpec with Matchers with PropertyChecks {
     println("Start data initilizing ...")
     val collection: JSONCollection = dbProvider.db.collection("xlogs")
     val text = io.Source.fromInputStream(getClass.getResourceAsStream("/testLogs.json"))
+    println("text="+text)
     
     
     val empty = twait(collection.find(Json.obj()).cursor[JsObject].headOption).isEmpty
