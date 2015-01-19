@@ -4,9 +4,11 @@ organization := "me.singularex"
 
 version := "0.1-SNAPSHOT"
 
+scalaVersion := "2.10.4"
+
 libraryDependencies ++= Seq(
   "com.github.nscala-time" %% "nscala-time" % "1.2.0",
-  "com.typesafe.play" %% "play-json" % "2.4.0-M2",
+  "com.typesafe.play" %% "play-json" % "2.2.1",
 //  "com.ning" % "async-http-client" % "1.8.3",
   "com.typesafe" % "config" % "1.2.0",
   "org.slf4j" % "slf4j-api" % "1.7.5",
@@ -16,7 +18,7 @@ libraryDependencies ++= Seq(
 
 //MongoDb driver
 libraryDependencies ++= Seq(
-  "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.0.akka23"
+  "org.reactivemongo" %% "play2-reactivemongo" % "0.10.2"
 )
 
 
